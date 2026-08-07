@@ -2,7 +2,7 @@ import API from "../utils/api.js";
 
 export const getAllIncome = async (month) => {
     const response = await API.get("/income", {
-        params: { month, limit: 1000 },
+        params: { ...(month ? { month } : {}), limit: 1000 },
     });
     return response.data;
 }

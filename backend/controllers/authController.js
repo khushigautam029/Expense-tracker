@@ -1,8 +1,10 @@
 import bcrypt from "bcryptjs";
 import { User } from "../models/index.js";
 import generateToken from "../utils/generateToken.js";
+import { sendOTPEmail } from "../utils/mailService.js";
 import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
 import { loginSchema, registerSchema } from "../validation/authValidation.js";
+
 
 export const register = async (req, res) => {
     // console.log(req.body);
@@ -15,16 +17,47 @@ export const register = async (req, res) => {
             });
         }
 
-        const { name, email, password , confirmPassword} = req.body;
+        const { name, email, password, confirmPassword } = req.body;
 
         const existingUser = await User.findOne({
             where: { email }
         });
 
-        if (existingUser) {
+        if (existingUser?.isVerified) {
             return res.status(STATUS_CODES.BAD_REQUEST).json({
                 success: false,
                 message: MESSAGES.USER_ALREADY_EXISTS
+            });
+        }
+
+        const otp = Math.floor(
+            100000 + Math.random() * 900000
+        ).toString();
+
+        const otpExpiry = new Date(
+            Date.now() + 10 * 60 * 1000
+        );
+
+        // A previous email attempt may have timed out after creating the account.
+        // In that case, let the user register again and send a fresh OTP instead
+        // of trapping them behind a "user already exists" error.
+        if (existingUser) {
+            await existingUser.update({ otp, otpExpiry });
+            try {
+                 sendOTPEmail(existingUser.email, otp);
+            } catch (error) {
+                console.log("Email Error:", error.message);
+
+                return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+                    success: false,
+                    message: MESSAGES.UNABLE_TO_SEND_OTP
+                });
+            }
+
+            return res.status(STATUS_CODES.OK).json({
+                success: true,
+                message: MESSAGES.NEW_OTP_SENT,
+                email: existingUser.email,
             });
         }
 
@@ -33,22 +66,43 @@ export const register = async (req, res) => {
         const user = await User.create({
             name,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+
+            otp,
+            otpExpiry,
+
+            isVerified: false,
         });
+
+
+        try {
+             sendOTPEmail(email, otp);
+        } catch (error) {
+            console.log("Email Error:", error.message);
+
+            await user.destroy();
+
+            return res.status(500).json({
+                success: false,
+                message: MESSAGES.UNABLE_TO_SEND_OTP
+            });
+        }
 
         res.status(STATUS_CODES.CREATED).json({
             success: true,
-            message: MESSAGES.USER_REGISTERED,
-            token: generateToken(user.id),
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email
-            }
+            message:
+                "Registration successful. Please verify your email using the OTP.",
+            email: user.email,
         });
+        // token: generateToken(user.id),
+        // user: {
+        //     id: user.id,
+        //     name: user.name,
+        //     email: user.email
+        // }
+
 
     } catch (err) {
-
         res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: err.message
@@ -78,6 +132,13 @@ export const login = async (req, res) => {
             return res.status(STATUS_CODES.BAD_REQUEST).json({
                 success: false,
                 message: MESSAGES.INVALID_CREDENTIALS
+            });
+        }
+
+        if (!user.isVerified) {
+            return res.status(STATUS_CODES.UNAUTHORIZED).json({
+                success: false,
+                message: MESSAGES.VERIFY_EMAIL_FIRST
             });
         }
 
@@ -128,6 +189,174 @@ export const getProfile = async (req, res) => {
         res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: error.message
+        });
+    }
+};
+
+
+export const deleteUserById = async (req, res) => {
+    try {
+        const user = await User.findByPk(req.params.id);
+
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success: false,
+                message: MESSAGES.USER_NOT_FOUND
+            });
+        }
+
+        await user.destroy();
+
+        res.status(STATUS_CODES.OK).json({
+            success: true,
+            message: MESSAGES.USER_DELETED
+        });
+
+    } catch (error) {
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+export const getAllUsers = async (req, res) => {
+    try {
+
+        const users = await User.findAll({
+            attributes: {
+                exclude: ["password", "otp", "otpExpiry"]
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            users
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+
+export const verifyOTP = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        const user = await User.findOne({
+            where: { email }
+        });
+
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success: false,
+                message: MESSAGES.USER_NOT_FOUND
+            });
+        }
+
+        if (user.isVerified) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                success: false,
+                message: MESSAGES.EMAIL_ALREADY_VERIFIED
+            });
+        }
+
+        if (user.otp !== otp) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                success: false,
+                message: MESSAGES.INVALID_OTP
+            });
+        }
+
+        if (new Date() > new Date(user.otpExpiry)) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                success: false,
+                message: MESSAGES.OTP_EXPIRED
+            });
+        }
+
+        user.isVerified = true;
+        user.otp = null;
+        user.otpExpiry = null;
+
+        await user.save();
+
+        const token = generateToken(user.id);
+
+        res.status(STATUS_CODES.CREATED).json({
+            success: true,
+            message: MESSAGES.EMAIL_VERIFIED_SUCCESSFULLY,
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email
+            }
+        });
+
+    } catch (error) {
+
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+export const resendOTP = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const user = await User.findOne({
+            where: { email }
+        });
+
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success: false,
+                message: MESSAGES.USER_NOT_FOUND
+            });
+        }
+
+        if (user.isVerified) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                success: false,
+                message: "Email is already verified."
+            });
+        }
+
+        const otp = Math.floor(
+            100000 + Math.random() * 900000
+        ).toString();
+
+        const otpExpiry = new Date(
+            Date.now() + 10 * 60 * 1000
+        );
+
+        await user.update({
+            otp,
+            otpExpiry,
+        });
+
+        await sendOTPEmail(email, otp);
+
+        res.status(STATUS_CODES.OK).json({
+            success: true,
+            message: "A new OTP has been sent to your email.",
+            email,
+        });
+
+    } catch (error) {
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: error.message,
         });
     }
 };

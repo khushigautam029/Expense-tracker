@@ -1,4 +1,12 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+/* Hide Microsoft Edge / IE default password reveal button */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}
 
 * {
     box-sizing: border-box;

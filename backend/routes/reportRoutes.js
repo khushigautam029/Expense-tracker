@@ -7,13 +7,8 @@ import {
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
-
 // Get report data
 router.get("/", authMiddleware, getReport);
-
 router.get("/pdf", authMiddleware, downloadPDF);
-
 router.get("/excel", authMiddleware, downloadExcel);
-
 export default router;
-

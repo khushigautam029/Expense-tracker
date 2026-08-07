@@ -20,19 +20,14 @@ const Income = sequelize.define(
             allowNull: false,
         },
 
-        source: {
-            type: DataTypes.STRING,
-            allowNull: false,
+        sourceId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
         },
 
         date: {
             type: DataTypes.DATEONLY,
             allowNull: false,
-        },
-
-        notes: {
-            type: DataTypes.TEXT,
-            allowNull: true,
         },
     },
     {

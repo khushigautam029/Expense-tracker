@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { Income } from "../models/index.js";
+import { Income, Source } from "../models/index.js";
 import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
 import { incomeSchema } from "../validation/incomeValidation.js";
 
@@ -8,12 +8,24 @@ const getMonthFilter = (month) => {
     const year = Number(month.slice(0, 4));
     const monthNumber = Number(month.slice(5, 7));
     const lastDay = new Date(year, monthNumber, 0).getDate();
-    return { date: { [Op.between]: [`${month}-01`, `${month}-${String(lastDay).padStart(2, "0")}`] } };
+    return { 
+        date: { 
+            [Op.between]: [`${month}-01`, `${month}-${String(lastDay).padStart(2, "0")}`] 
+        } 
+    };
 };
 
 export const addIncome = async (req, res) => {
     try {
-        const { error } = incomeSchema.validate(req.body);
+        // Cast string inputs from frontend form to numbers
+        const payload = {
+            ...req.body,
+            amount: req.body.amount !== "" && req.body.amount !== undefined ? Number(req.body.amount) : req.body.amount,
+            sourceId: req.body.sourceId !== "" && req.body.sourceId !== undefined ? Number(req.body.sourceId) : req.body.sourceId,
+        };
+
+        // Validate payload against updated Joi schema
+        const { error } = incomeSchema.validate(payload);
 
         if (error) {
             return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -22,34 +34,43 @@ export const addIncome = async (req, res) => {
             });
         }
 
-        const { title, amount, source, date, notes } = req.body;
+        const { title, amount, sourceId, date, notes } = payload;
+
+        // Verify source exists in `sources` table
+        const source = await Source.findByPk(sourceId);
+
+        if (!source) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success: false,
+                message: "Selected source does not exist.",
+            });
+        }
 
         const income = await Income.create({
             title,
             amount,
-            source,
+            sourceId,
             date,
             notes,
             userId: req.user.id,
         });
 
-        res.status(STATUS_CODES.CREATED).json({
+        return res.status(STATUS_CODES.OK).json({
             success: true,
             message: MESSAGES.INCOME_ADDED,
             income,
         });
+
     } catch (error) {
-        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: error.message,
         });
     }
 };
 
-
 export const getAllIncome = async (req, res) => {
     try {
-
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 5;
         const search = req.query.search || "";
@@ -67,13 +88,19 @@ export const getAllIncome = async (req, res) => {
                     [Op.like]: `%${search}%`
                 }
             },
-
+            include: [
+                {
+                    model: Source,
+                    as: "source",
+                    attributes: ["id", "name"],
+                },
+            ],
             order: [[sortBy, order]],
             limit,
             offset
         });
 
-        res.status(STATUS_CODES.OK).json({
+        return res.status(STATUS_CODES.OK).json({
             success: true,
             totalIncome: count,
             totalPages: Math.ceil(count / limit),
@@ -82,12 +109,10 @@ export const getAllIncome = async (req, res) => {
         });
 
     } catch (error) {
-
-        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: error.message
         });
-
     }
 };
 
@@ -97,7 +122,14 @@ export const getIncomeById = async (req, res) => {
             where: {
                 id: req.params.id,
                 userId: req.user.id
-            }
+            },
+            include: [
+                {
+                    model: Source,
+                    as: "source",
+                    attributes: ["id", "name"],
+                },
+            ],
         });
 
         if (!income) {
@@ -107,25 +139,28 @@ export const getIncomeById = async (req, res) => {
             });
         }
 
-        res.status(STATUS_CODES.OK).json({
+        return res.status(STATUS_CODES.OK).json({
             success: true,
             income
         });
 
     } catch (error) {
-
-        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: error.message
         });
-
     }
-
 };
 
 export const updateIncome = async (req, res) => {
     try {
-        const { error } = incomeSchema.validate(req.body);
+        const payload = {
+            ...req.body,
+            amount: req.body.amount !== "" && req.body.amount !== undefined ? Number(req.body.amount) : req.body.amount,
+            sourceId: req.body.sourceId !== "" && req.body.sourceId !== undefined ? Number(req.body.sourceId) : req.body.sourceId,
+        };
+
+        const { error } = incomeSchema.validate(payload);
 
         if (error) {
             return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -137,6 +172,53 @@ export const updateIncome = async (req, res) => {
         const income = await Income.findOne({
             where: {
                 id: req.params.id,
+                userId: req.user.id,
+            },
+        });
+
+        if (!income) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success: false,
+                message: MESSAGES.INCOME_NOT_FOUND
+            });
+        }
+
+        const source = await Source.findByPk(payload.sourceId);
+
+        if (!source) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                success: false,
+                message: MESSAGES.SOURCE_NOT_FOUND,
+            });
+        }
+
+        await income.update({
+            title: payload.title,
+            amount: payload.amount,
+            sourceId: payload.sourceId,
+            date: payload.date,
+            notes: payload.notes,
+        });
+
+        return res.status(STATUS_CODES.OK).json({
+            success: true,
+            message: MESSAGES.INCOME_UPDATED,
+            income
+        });
+
+    } catch (error) {
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+export const deleteIncome = async (req, res) => {
+    try {
+        const income = await Income.findOne({
+            where: {
+                id: req.params.id,
                 userId: req.user.id
             }
         });
@@ -148,54 +230,15 @@ export const updateIncome = async (req, res) => {
             });
         }
 
-        await income.update(req.body);
-
-        res.status(STATUS_CODES.OK).json({
-            success: true,
-            message: MESSAGES.INCOME_UPDATED,
-            income
-        });
-
-    } catch (error) {
-
-        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: error.message
-        });
-
-    }
-
-};
-
-
-export const deleteIncome = async (req, res) => {
-
-    try {
-
-        const income = await Income.findOne({
-            where: {
-                id: req.params.id,
-                userId: req.user.id
-            }
-        });
-
-        if (!income) {
-            return res.status(STATUS_CODES.NOT_FOUND).json({
-                success: false,
-                message: "Income not found"
-            });
-        }
-
         await income.destroy();
 
-        res.status(STATUS_CODES.OK).json({
+        return res.status(STATUS_CODES.OK).json({
             success: true,
-            message: "Income Deleted Successfully"
+            message: MESSAGES.INCOME_DELETED
         });
 
     } catch (error) {
-
-        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: error.message
         });

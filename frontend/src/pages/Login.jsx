@@ -2,6 +2,12 @@ import { Eye, EyeOff, Lock, Mail, Wallet } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../utils/api";
+import {
+    closeAlert,
+    errorAlert,
+    loadingAlert,
+    successToast
+} from "../utils/swal";
 import { validateEmail, validatePassword } from "../utils/validation";
 
 const Login = () => {
@@ -56,6 +62,7 @@ const Login = () => {
         );
         if (hasError) return;
         setLoading(true);
+        loadingAlert();
         try {
             const response = await API.post(
                 "/auth/login",
@@ -65,25 +72,52 @@ const Login = () => {
                 "token",
                 response.data.token
             );
+
             localStorage.setItem(
                 "user",
                 JSON.stringify(response.data.user)
             );
-            alert(response.data.message);
-            navigate("/dashboard");
+
+            closeAlert();
+
+            await successToast(
+                "Login Successful",
+                response.data.message
+            );
+            navigate("/dashboard", {
+                replace: true,
+            });
         } catch (error) {
             if (error.response) {
                 const message = error.response.data.message;
                 if (message === "Invalid Credentials") {
+
+                    closeAlert();
+
                     setErrors({
                         email: "Invalid Credentials",
                         password: "Invalid Credentials",
                     });
+
+                    await errorAlert(
+                        "Login Failed",
+                        "Invalid email or password."
+                    );
+
                 } else {
-                    alert(message);
+                    closeAlert();
+                    await errorAlert(
+                        "Login Failed",
+                        message
+                    );
                 }
             } else {
-                alert("Server Error");
+                closeAlert();
+
+                await errorAlert(
+                    "Server Error",
+                    "Something went wrong. Please try again later."
+                );
             }
         }
         setLoading(false);
@@ -113,7 +147,6 @@ const Login = () => {
                     onSubmit={handleSubmit}
                     className="space-y-5"
                 >
-
                     {/* Email */}
                     <div>
                         <label className="mb-2 block text-sm font-medium text-slate-600">
@@ -152,7 +185,6 @@ const Login = () => {
                             Password
                         </label>
                         <div className="relative">
-
                             <Lock
                                 size={18}
                                 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -171,59 +203,43 @@ const Login = () => {
                                         : "border-slate-300 focus:border-blue-500"
                                     }`}
                             />
-
                             {errors.password && (
                                 <p className="mt-1 text-sm text-red-500">
                                     {errors.password}
                                 </p>
                             )}
-
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
                             >
-
                                 {showPassword ? (
                                     <EyeOff size={18} />
                                 ) : (
                                     <Eye size={18} />
                                 )}
-
                             </button>
-
                         </div>
-
                     </div>
 
-
                     {/* Remember */}
-
                     <div className="flex items-center justify-between">
-
                         <label className="flex items-center gap-2 text-sm text-slate-600">
-
                             <input
                                 type="checkbox"
                                 className="rounded"
                             />
-
                             Remember Me
-
                         </label>
-
                         <button
                             type="button"
                             className="text-sm font-medium text-blue-600 hover:underline"
                         >
                             Forgot Password?
                         </button>
-
                     </div>
 
-
                     {/* Button */}
-
                     <button
                         type="submit"
                         disabled={loading}

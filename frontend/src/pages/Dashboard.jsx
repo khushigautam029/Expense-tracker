@@ -5,6 +5,7 @@ import {
     CreditCard,
     Wallet,
 } from "lucide-react";
+import { errorAlert } from "../utils/swal";
 
 const COLORS = [
     "#6366F1",
@@ -27,7 +28,7 @@ import {
     YAxis,
 } from "recharts";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getDashboard } from "../services/dashboardService";
 
 const SummaryCard = ({
@@ -39,11 +40,11 @@ const SummaryCard = ({
 }) => {
 
     return (
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-700  bg-white dark:bg-slate-900 p-5">
 
             <div className="flex items-center justify-between">
 
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                     {title}
                 </p>
 
@@ -55,11 +56,11 @@ const SummaryCard = ({
 
             </div>
 
-            <h2 className="mt-4 text-2xl font-bold text-slate-800">
+            <h2 className="mt-4 text-2xl font-bold text-slate-800 dark:text-white">
                 {amount}
             </h2>
 
-            <p className="mt-2 text-xs text-slate-400">
+            <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
                 {description}
             </p>
 
@@ -68,6 +69,8 @@ const SummaryCard = ({
 };
 
 const Dashboard = () => {
+
+    const monthInputRef = useRef(null);
 
     const [selectedMonth, setSelectedMonth] = useState(
         new Date().toISOString().slice(0, 7)
@@ -99,7 +102,12 @@ const Dashboard = () => {
             const data = await getDashboard(month);
             setDashboard(data);
         } catch (error) {
-            console.log(error);
+            console.error(error);
+
+            errorAlert(
+                "Dashboard Error",
+                "Unable to load dashboard data."
+            );
         } finally {
             setLoading(false);
         }
@@ -108,7 +116,7 @@ const Dashboard = () => {
     if (loading) {
         return (
             <div className="mt-20 flex justify-center">
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
                     Loading Dashboard...
                 </h2>
             </div>
@@ -117,7 +125,7 @@ const Dashboard = () => {
 
     if (!dashboard) {
         return (
-            <div className="mt-20 text-center">
+            <div className="mt-20 text-center  text-slate-800 dark:text-white ">
                 Failed to load dashboard.
             </div>
         );
@@ -163,24 +171,38 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
 
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800 mt-15">
+                    <h1 className="text-2xl font-bold text-slate-800  dark:text-white mt-15">
                         Dashboard
                     </h1>
 
-                    <p className="mt-1 text-sm text-slate-400">
+                    <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
                         Here's your financial overview
                     </p>
                 </div>
 
-                <label className="relative flex items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 shadow-sm mt-15">
-                    <CalendarDays size={16} />
+                <div className="relative flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 shadow-sm mt-15 transition-colors duration-300">
+                    <button
+                        type="button"
+                        aria-label="Choose month"
+                        onClick={() => {
+                            if (monthInputRef.current?.showPicker) {
+                                monthInputRef.current.showPicker();
+                            } else {
+                                monthInputRef.current?.focus();
+                            }
+                        }}
+                        className="cursor-pointer"
+                    >
+                        <CalendarDays size={16} />
+                    </button>
                     <input
+                        ref={monthInputRef}
                         type="month"
                         value={selectedMonth}
                         onChange={(e) => setSelectedMonth(e.target.value)}
-                        className="ml-2 bg-transparent outline-none"
+                        className="ml-2 bg-transparent outline-none text-slate-700 dark:text-white dark:[color-scheme:dark] dark:[&::-webkit-calendar-picker-indicator]:invert"
                     />
-                </label>
+                </div>
 
             </div>
 
@@ -221,23 +243,21 @@ const Dashboard = () => {
             </div>
 
             {/* Charts */}
-            <div className="mx-auto w-full max-w-7xl grid grid-cols-1 gap-5 xl:grid-cols-2">
-                {/* Monthly Chart */}
-                <div className="rounded-xl border border-slate-200 bg-white p-5 xl:col-span-2">
+            <div className="w-full px-6 py-4">
+                <div className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 transition-colors duration-300">
+
                     <div className="mb-5">
-                        <h2 className="font-semibold text-slate-800">
+                        <h2 className="font-semibold text-slate-800 dark:text-white">
                             Income & Expenses
                         </h2>
-                        <p className="mt-1 text-xs text-slate-400">
+
+                        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
                             Monthly financial overview
                         </p>
                     </div>
 
                     <div className="h-[320px]">
-                        <ResponsiveContainer
-                            width="100%"
-                            height="100%"
-                        >
+                        <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={monthlyChartData}>
                                 <CartesianGrid
                                     strokeDasharray="3 3"
@@ -268,64 +288,26 @@ const Dashboard = () => {
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
+
                 </div>
-
-                {/* Pie Chart */}
-                {/* <div className="rounded-xl border border-slate-200 bg-white p-5">
-                    <h2 className="font-semibold text-slate-800">
-                        Expenses by Category
-                    </h2>
-                    <p className="mt-1 text-xs text-slate-400">
-                        Where your money is going
-                    </p>
-                    <div className="mt-5 h-[250px]">
-                        <ResponsiveContainer>
-                            <PieChart>
-                                <Pie
-                                    data={categoryData}
-                                    dataKey="total"
-                                    nameKey="category"
-                                    cx="50%"
-                                    cy="50%"
-                                    outerRadius={90}
-                                    label
-                                >
-                                    {categoryData.map((_, index) => (
-                                        <Cell
-                                            key={index}
-                                            fill={
-                                                COLORS[
-                                                index % COLORS.length
-                                                ]
-                                            }
-                                        />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                                <Legend />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div> */}
             </div>
-
             {/* Recent Transactions */}
-            <div className="rounded-xl border border-slate-200 bg-white">
-                <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 transition-colors duration-300">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-5 py-4">
                     <div>
-                        <h2 className="font-semibold text-slate-800">
+                        <h2 className="font-semibold text-slate-800 dark:text-white">
                             Recent Transactions
                         </h2>
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
                             Your latest income and expenses
                         </p>
                     </div>
-                    <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                    <button className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
                         View All
                     </button>
                 </div>
 
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 dark:divide-slate-700">
                     {recentTransactions.map((transaction, index) => (
 
                         <div
@@ -338,8 +320,8 @@ const Dashboard = () => {
                                 <div
                                     className={`flex h-10 w-10 items-center justify-center rounded-full
                     ${transaction.type === "income"
-                                            ? "bg-green-50 text-green-600"
-                                            : "bg-red-50 text-red-500"
+                                            ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                                            : "bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400"
                                         }`}
                                 >
 
@@ -352,11 +334,11 @@ const Dashboard = () => {
 
                                 <div>
 
-                                    <p className="text-sm font-medium text-slate-700">
+                                    <p className="text-sm font-medium text-slate-700 dark:text-white">
                                         {transaction.title}
                                     </p>
 
-                                    <p className="mt-1 text-xs text-slate-400">
+                                    <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
                                         {transaction.type === "income"
                                             ? transaction.source
                                             : transaction.category}

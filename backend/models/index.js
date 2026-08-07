@@ -1,5 +1,6 @@
 import Expense from "./Expense.js";
 import Income from "./Income.js";
+import Source from "./Source.js";
 import User from "./User.js";
 
 // One User -> Many Income
@@ -22,4 +23,23 @@ Expense.belongsTo(User, {
     foreignKey: "userId",
 });
 
-export { Expense, Income, User };
+// User.hasMany(Source, {
+//     foreignKey: "userId",
+// });
+
+// Source.belongsTo(User, {
+//     foreignKey: "userId",
+// });
+
+Income.belongsTo(Source, {
+    foreignKey: "sourceId",
+    as: "source",
+});
+
+Source.hasMany(Income, {
+    foreignKey: "sourceId",
+    as: "incomes",
+});
+
+export { Expense, Income, Source, User };
+

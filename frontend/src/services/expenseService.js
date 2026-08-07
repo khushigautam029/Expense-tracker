@@ -2,7 +2,7 @@ import API from "../utils/api";
 
 export const getExpenses = async (month) =>{
     const response = await API.get("/expenses", {
-        params: { month, limit: 1000 },
+        params: { ...(month ? { month } : {}), limit: 1000 },
     });
     return response.data;
 }

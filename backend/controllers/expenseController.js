@@ -14,6 +14,10 @@ const getMonthFilter = (month) => {
 export const addExpense = async (req, res) => {
     try {
 
+        req.body.category =
+            req.body.category.charAt(0).toUpperCase() +
+            req.body.category.slice(1).toLowerCase();
+
         const { error } = expenseSchema.validate(req.body);
 
         if (error) {

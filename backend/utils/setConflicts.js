@@ -86,6 +86,13 @@ export const MESSAGES = {
     // Email Validation
     EMAIL_REQUIRED: "Email is required.",
     INVALID_EMAIL: "Please enter a valid email address.",
+    EMAIL_ALREADY_VERIFIED:"Email already verified.",
+    INVALID_OTP: "Invalid OTP",
+    OTP_EXPIRED:"OTP has expired",
+    EMAIL_VERIFIED_SUCCESSFULLY:"Email verified successfully",
+    UNABLE_TO_SEND_OTP:"Unable to send OTP email.",
+    NEW_OTP_SENT:"A new verification OTP has been sent to your email.",
+    VERIFY_EMAIL_FIRST:"Please verify your email first.",
 
     // Password Validation
     PASSWORD_REQUIRED: "Password is required.",
@@ -110,5 +117,9 @@ export const MESSAGES = {
 
     // Common
     INTERNAL_SERVER_ERROR: "Internal server error.",
-    SOMETHING_WENT_WRONG: "Something went wrong. Please try again later."
+    SOMETHING_WENT_WRONG: "Something went wrong. Please try again later.",
+
+    SOURCE_ALREADY_EXIST:"Source already exists.",
+    SOURCE_ADDED_SUCCESSFULLY:"Source added successfully",
+    SOURCE_NOT_FOUND: "Source not found"
 };
