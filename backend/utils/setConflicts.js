@@ -121,5 +121,11 @@ export const MESSAGES = {
 
     SOURCE_ALREADY_EXIST:"Source already exists.",
     SOURCE_ADDED_SUCCESSFULLY:"Source added successfully",
-    SOURCE_NOT_FOUND: "Source not found"
+    SOURCE_NOT_FOUND: "Source not found",
+
+    ALL_NOTIFICATION_DELETED_SUCCESSFULLY:"All notifications deleted successfully",
+    NOTIFICATION_NOT_FOUND:"Notification not found.",
+    NOTIFICATION_MARKED_AS_READ:"Notification marked as read.",
+    ALL_NOTIFICATION_MARKED_AS_READ:"All notifications marked as read.",
+    NOTIFICATION_DELETED_SUCCESSFULLY:"Notification deleted successfully."
 };

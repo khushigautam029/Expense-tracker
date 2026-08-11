@@ -64,7 +64,7 @@ export const sendOTPEmail = async (toEmail, otp) => {
                     style="background:#fff7ed;border-left:5px solid #f59e0b;padding:18px;border-radius:8px;">
                 <p style="margin:0;color:#92400e;">
                         ⏰ This OTP is valid for
-                        <strong>2 minutes</strong>.
+                        <strong>10 minutes</strong>.
                 </p>
                 </div>
 

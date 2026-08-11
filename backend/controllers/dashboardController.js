@@ -1,5 +1,6 @@
 import { col, fn, Op } from "sequelize";
 import { Expense, Income } from "../models/index.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import { STATUS_CODES } from "../utils/setConflicts.js";
 
 const getMonthFilter = (month) => {
@@ -10,108 +11,96 @@ const getMonthFilter = (month) => {
     return { date: { [Op.between]: [`${month}-01`, `${month}-${String(lastDay).padStart(2, "0")}`] } };
 };
 
+export const getDashboard = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const { month } = req.query;
+    const where = { userId, ...getMonthFilter(month) };
 
-export const getDashboard = async (req, res) => {
-    try {
+    // Total Income
+    const totalIncome = await Income.sum("amount", {
+        where
+    });
 
-        const userId = req.user.id;
-        const { month } = req.query;
-        const where = { userId, ...getMonthFilter(month) };
+    // Total Expense
+    const totalExpense = await Expense.sum("amount", {
+        where
+    });
 
-        // Total Income
-        const totalIncome = await Income.sum("amount", {
-            where
-        });
+    // Count
+    const incomeCount = await Income.count({
+        where
+    });
 
-        // Total Expense
-        const totalExpense = await Expense.sum("amount", {
-            where
-        });
+    const expenseCount = await Expense.count({
+        where
+    });
 
-        // Count
-        const incomeCount = await Income.count({
-            where
-        });
+    // Recent Income
+    const recentIncome = await Income.findAll({
+        where,
+        limit: 5,
+        order: [["createdAt", "DESC"]]
+    });
 
-        const expenseCount = await Expense.count({
-            where
-        });
+    // Recent Expense
+    const recentExpense = await Expense.findAll({
+        where,
+        limit: 5,
+        order: [["createdAt", "DESC"]]
+    });
 
-        // Recent Income
-        const recentIncome = await Income.findAll({
-            where,
-            limit: 5,
-            order: [["createdAt", "DESC"]]
-        });
+    // Expense By Category
+    const expenseByCategory = await Expense.findAll({
+        where,
+        attributes: [
+            "category",
+            [fn("SUM", col("amount")), "total"]
+        ],
+        group: ["category"]
+    });
 
-        // Recent Expense
-        const recentExpense = await Expense.findAll({
-            where,
-            limit: 5,
-            order: [["createdAt", "DESC"]]
-        });
+    // Monthly Income
+    const monthlyIncome = await Income.findAll({
+        where,
+        attributes: [
+            [fn("MONTHNAME", col("date")), "month"],
+            [fn("SUM", col("amount")), "total"]
+        ],
+        group: [
+            fn("MONTH", col("date")),
+            fn("MONTHNAME", col("date"))
+        ],
+        order: [[fn("MONTH", col("date")), "ASC"]]
+    });
 
-        // Expense By Category
-        const expenseByCategory = await Expense.findAll({
-            where,
-            attributes: [
-                "category",
-                [fn("SUM", col("amount")), "total"]
-            ],
-            group: ["category"]
-        });
+    // Monthly Expense
+    const monthlyExpense = await Expense.findAll({
+        where,
+        attributes: [
+            [fn("MONTHNAME", col("date")), "month"],
+            [fn("SUM", col("amount")), "total"]
+        ],
+        group: [
+            fn("MONTH", col("date")),
+            fn("MONTHNAME", col("date"))
+        ],
+        order: [[fn("MONTH", col("date")), "ASC"]]
+    });
 
-        // Monthly Income
-        const monthlyIncome = await Income.findAll({
-            where,
-            attributes: [
-                [fn("MONTHNAME", col("date")), "month"],
-                [fn("SUM", col("amount")), "total"]
-            ],
-            group: [
-                fn("MONTH", col("date")),
-                fn("MONTHNAME", col("date"))
-            ],
-            order: [[fn("MONTH", col("date")), "ASC"]]
-        });
-
-        // Monthly Expense
-        const monthlyExpense = await Expense.findAll({
-            where,
-            attributes: [
-                [fn("MONTHNAME", col("date")), "month"],
-                [fn("SUM", col("amount")), "total"]
-            ],
-            group: [
-                fn("MONTH", col("date")),
-                fn("MONTHNAME", col("date"))
-            ],
-            order: [[fn("MONTH", col("date")), "ASC"]]
-        });
-
-        // Final Response
-        res.status(STATUS_CODES.OK).json({
-            success: true,
-            summary: {
-                totalIncome: Number(totalIncome || 0),
-                totalExpense: Number(totalExpense || 0),
-                balance: Number(totalIncome || 0) - Number(totalExpense || 0),
-                incomeCount,
-                expenseCount
-            },
-            recentIncome,
-            recentExpense,
-            expenseByCategory,
-            monthlyIncome,
-            monthlyExpense
-        });
-
-    } catch (error) {
-
-        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: error.message
-        });
-
-    }
-};
+    // Final Response
+    res.status(STATUS_CODES.OK).json({
+        success: true,
+        summary: {
+            totalIncome: Number(totalIncome || 0),
+            totalExpense: Number(totalExpense || 0),
+            balance: Number(totalIncome || 0) - Number(totalExpense || 0),
+            incomeCount,
+            expenseCount
+        },
+        recentIncome,
+        recentExpense,
+        expenseByCategory,
+        monthlyIncome,
+        monthlyExpense
+    });
+});

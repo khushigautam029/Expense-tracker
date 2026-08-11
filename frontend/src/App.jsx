@@ -9,11 +9,13 @@ import {
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/Sidebar";
+import { NotificationProvider } from "./context/NotificationContext";
 import Dashboard from "./pages/Dashboard";
 import Expenses from "./pages/Expenses";
 import Income from "./pages/Income";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import Notifications from "./pages/Notification";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import Reports from "./pages/Reports";
@@ -50,6 +52,7 @@ const Layout = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
+    <NotificationProvider>
       <Routes>
         {/* Default route */}
         <Route path="/" element={<Navigate to="/login" replace />} />
@@ -69,10 +72,13 @@ function App() {
         <Route path="/expenses" element={<Layout><ProtectedRoute><Expenses /></ProtectedRoute></Layout>} />
         {/* Reports */}
         <Route path="/reports" element={<Layout><ProtectedRoute><Reports /></ProtectedRoute></Layout>} />
-
+        {/* Notifications */}
+        <Route path="/notifications" element={<Layout><ProtectedRoute><Notifications /></ProtectedRoute></Layout>}/>
+        
         {/* Not found */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </NotificationProvider>
     </BrowserRouter>
   );
 }

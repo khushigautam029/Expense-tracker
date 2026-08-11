@@ -9,10 +9,11 @@ import {
     verifyOTP,
 } from "../controllers/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import loginLimiter from "../utils/rateLimiter.js";
 
 const router = express.Router();
 router.post("/register", register);
-router.post("/login", login);
+router.post("/login",loginLimiter, login);
 router.get("/profile",authMiddleware, getProfile);
 router.get("/users", authMiddleware, getAllUsers);
 router.delete("/:id", authMiddleware, deleteUserById);

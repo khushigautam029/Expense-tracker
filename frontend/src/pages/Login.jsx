@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import API from "../utils/api";
 import {
     closeAlert,
-    errorAlert,
+    errorToast,
     loadingAlert,
     successToast
 } from "../utils/swal";
@@ -99,14 +99,14 @@ const Login = () => {
                         password: "Invalid Credentials",
                     });
 
-                    await errorAlert(
+                    await errorToast(
                         "Login Failed",
                         "Invalid email or password."
                     );
 
                 } else {
                     closeAlert();
-                    await errorAlert(
+                    await errorToast(
                         "Login Failed",
                         message
                     );
@@ -114,7 +114,7 @@ const Login = () => {
             } else {
                 closeAlert();
 
-                await errorAlert(
+                await errorToast(
                     "Server Error",
                     "Something went wrong. Please try again later."
                 );

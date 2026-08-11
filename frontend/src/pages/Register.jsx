@@ -12,7 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import API from "../utils/api";
 import {
     closeAlert,
-    errorAlert,
+    errorToast,
     loadingAlert,
     successAlert,
 } from "../utils/swal";
@@ -192,18 +192,18 @@ const Register = () => {
 
             if (error.response) {
 
-                await errorAlert(
+                await errorToast(
                     "Registration Failed",
                     error.response.data.message
                 );
 
             } else if (error.code === "ECONNABORTED") {
-                await errorAlert(
+                await errorToast(
                     "Email Is Taking Too Long",
                     "The OTP email service did not respond in time. Please try again."
                 );
             } else {
-                await errorAlert(
+                await errorToast(
                     "Registration Failed",
                     "Something went wrong. Please try again."
                 );

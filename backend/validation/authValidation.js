@@ -10,7 +10,7 @@ export const registerSchema = Joi.object({
             "string.empty": MESSAGES.NAME_REQUIRED,
             "string.min": MESSAGES.NAME_MIN_LENGTH,
             "string.max": MESSAGES.NAME_MAX_LENGTH,
-            "any.required": MESSAGES.NAME_REQUIRED
+            "any.required": MESSAGES.NAME_REQUIRED,
         }),
 
     email: Joi.string()
@@ -38,7 +38,9 @@ export const registerSchema = Joi.object({
         .required()
         .messages({
             "any.only": "Passwords do not match"
-        })
+        }),
+
+    gender: Joi.string().valid("Male", "Female", "Other").optional(),
 });
 
 

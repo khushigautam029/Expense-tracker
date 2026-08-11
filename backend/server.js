@@ -4,21 +4,21 @@ import "./models/index.js";
 
 const PORT = process.env.PORT || 5000;
 
-async function startServer() {
+const startServer = async () => {
     try {
         await sequelize.authenticate();
         console.log("✅ MySQL Connected Successfully");
 
         await sequelize.sync();
-
         console.log("✅ Database Synced");
 
         app.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
         });
     } catch (error) {
-        console.error("❌ Error:", error);
+        console.error("❌ Server Startup Error:", error);
+        process.exit(1);
     }
-}
+};
 
 startServer();

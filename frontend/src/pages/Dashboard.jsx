@@ -5,7 +5,7 @@ import {
     CreditCard,
     Wallet,
 } from "lucide-react";
-import { errorAlert } from "../utils/swal";
+import { errorToast } from "../utils/swal";
 
 const COLORS = [
     "#6366F1",
@@ -104,7 +104,7 @@ const Dashboard = () => {
         } catch (error) {
             console.error(error);
 
-            errorAlert(
+            errorToast(
                 "Dashboard Error",
                 "Unable to load dashboard data."
             );
@@ -163,6 +163,8 @@ const Dashboard = () => {
                 new Date(b.createdAt) - new Date(a.createdAt)
         )
         .slice(0, 5);
+
+    // console.log(recentTransactions.length);
 
     return (
         <div className="space-y-6">
@@ -292,6 +294,7 @@ const Dashboard = () => {
                 </div>
             </div>
             {/* Recent Transactions */}
+            
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 transition-colors duration-300">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-5 py-4">
                     <div>
@@ -309,12 +312,10 @@ const Dashboard = () => {
 
                 <div className="divide-y divide-slate-100 dark:divide-slate-700">
                     {recentTransactions.map((transaction, index) => (
-
                         <div
                             key={index}
                             className="flex items-center justify-between px-5 py-4"
                         >
-
                             <div className="flex items-center gap-3">
 
                                 <div
@@ -361,6 +362,7 @@ const Dashboard = () => {
                             </p>
 
                         </div>
+
 
                     ))}
                 </div>

@@ -17,7 +17,7 @@ import {
 
 import {
     confirmDelete,
-    errorAlert,
+    errorToast,
     successAlert,
     warningAlert,
 } from "../utils/swal";
@@ -249,7 +249,7 @@ const Expenses = () => {
             resetModalForm();
         } catch (err) {
             console.log(err);
-            errorAlert("Failed", "Unable to add expense.");
+            errorToast("Failed", "Unable to add expense.");
         }
     };
 
@@ -293,7 +293,7 @@ const Expenses = () => {
             resetModalForm();
         } catch (err) {
             console.log(err);
-            errorAlert("Update Failed", "Unable to update expense.");
+            errorToast("Update Failed", "Unable to update expense.");
         }
     };
 
@@ -312,7 +312,7 @@ const Expenses = () => {
             fetchExpenses();
         } catch (err) {
             console.log(err);
-            errorAlert("Delete Failed", "Unable to delete expense.");
+            errorToast("Delete Failed", "Unable to delete expense.");
         }
     };
 

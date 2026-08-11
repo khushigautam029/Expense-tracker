@@ -1,5 +1,6 @@
 import Expense from "./Expense.js";
 import Income from "./Income.js";
+import Notification from "./Notification.js";
 import Source from "./Source.js";
 import User from "./User.js";
 
@@ -41,5 +42,16 @@ Source.hasMany(Income, {
     as: "incomes",
 });
 
-export { Expense, Income, Source, User };
+
+// One User -> Many Notifications
+User.hasMany(Notification, {
+    foreignKey: "userId",
+    onDelete: "CASCADE",
+});
+
+Notification.belongsTo(User, {
+    foreignKey: "userId",
+});
+
+export { Expense, Income, Notification, Source, User };
 

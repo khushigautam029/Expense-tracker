@@ -2,7 +2,7 @@ import { ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../utils/api";
-import { errorAlert } from "../utils/swal";
+import { errorToast } from "../utils/swal";
 
 const VerifyOTP = () => {
     const navigate = useNavigate();
@@ -23,7 +23,7 @@ const VerifyOTP = () => {
             );
 
         } catch (error) {
-            errorAlert(
+            errorToast(
                 "Failed",
                 error.response?.data?.message || "Unable to resend OTP."
             );

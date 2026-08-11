@@ -19,7 +19,6 @@ export const successToast = (title) => {
     });
 };
 
-
 // Success
 export const successAlert = (title, text = "") => {
     return Swal.fire({
@@ -39,6 +38,13 @@ export const errorAlert = (title, text = "") => {
         title,
         text,
         confirmButtonColor: "#dc2626",
+    });
+};
+
+export const errorToast = (title) => {
+    return Toast.fire({
+        icon: "error",
+        title,
     });
 };
 

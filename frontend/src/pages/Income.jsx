@@ -17,7 +17,7 @@ import {
 
 import {
     confirmDelete,
-    errorAlert,
+    errorToast,
     successAlert,
     warningAlert,
 } from "../utils/swal";
@@ -70,7 +70,7 @@ const Income = () => {
     const fetchSources = async () => {
         try {
             const data = await getSources();
-            console.log("Sources:", data);
+            // console.log("Sources:", data);
             setSources(data);
         } catch (err) {
             console.log(err);
@@ -204,7 +204,7 @@ const Income = () => {
             setOpenModal(false);
         } catch (error) {
             console.log(error);
-            errorAlert(
+            errorToast(
                 "Failed",
                 "Unable to add income."
             );
@@ -237,7 +237,7 @@ const Income = () => {
             fetchIncome();
         } catch (error) {
             console.log(error);
-            errorAlert(
+            errorToast(
                 "Delete Failed",
                 "Unable to delete income."
             );
@@ -269,7 +269,7 @@ const Income = () => {
             resetForm();
         } catch (error) {
             console.log(error);
-            errorAlert(
+            errorToast(
                 "Update Failed",
                 "Unable to update income."
             );
