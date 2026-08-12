@@ -373,7 +373,6 @@ const Profile = () => {
                     >
                         Overview
                     </button>
-
                     <button
                         onClick={() =>
                             setActiveTab("security")
@@ -385,50 +384,32 @@ const Profile = () => {
                     >
                         Security & Password
                     </button>
-
                 </div>
-
             </div>
 
-            {/* ================================= */}
             {/* OVERVIEW */}
-            {/* ================================= */}
-
             {activeTab === "overview" && (
-
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-
                     {/* Main Information */}
-
                     <div className="lg:col-span-2">
-
                         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-
                             <h2 className="text-base font-semibold text-slate-900 dark:text-white">
                                 Personal Information
                             </h2>
-
                             <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                                 View and manage your profile details.
                             </p>
-
                             <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
-
                                 {/* Name */}
-
                                 <div>
-
                                     <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                                         Full Name
                                     </label>
-
                                     <div className="relative">
-
                                         <User
                                             size={16}
                                             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                                         />
-
                                         <input
                                             type="text"
                                             name="name"
@@ -440,26 +421,18 @@ const Profile = () => {
                                                     : "border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
                                                 }`}
                                         />
-
                                     </div>
-
                                 </div>
-
                                 {/* Email */}
-
                                 <div>
-
                                     <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                                         Email Address
                                     </label>
-
                                     <div className="relative">
-
                                         <Mail
                                             size={16}
                                             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                                         />
-
                                         <input
                                             type="email"
                                             name="email"
@@ -467,26 +440,18 @@ const Profile = () => {
                                             disabled
                                             className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-500 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
                                         />
-
                                     </div>
-
                                 </div>
-
                                 {/* Member Since */}
-
                                 <div className="md:col-span-2">
-
                                     <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                                         Member Since
                                     </label>
-
                                     <div className="relative">
-
                                         <CalendarDays
                                             size={16}
                                             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                                         />
-
                                         <input
                                             type="text"
                                             value={
@@ -506,38 +471,25 @@ const Profile = () => {
                                             disabled
                                             className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-500 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
                                         />
-
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </div>
-
                     </div>
 
                     {/* Side Panels */}
-
                     <div className="space-y-6">
-
                         {/* Account Status */}
-
                         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-
                             <h2 className="text-base font-semibold text-slate-900 dark:text-white">
                                 Account Status
                             </h2>
-
                             <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
-
                                 <div className="flex items-center gap-3">
-
                                     <ShieldCheck
                                         size={20}
                                         className="text-emerald-600"
                                     />
-
                                     <div>
                                         <p className="text-xs font-semibold text-slate-800 dark:text-white">
                                             Account Verified
