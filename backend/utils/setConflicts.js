@@ -1,15 +1,11 @@
 export const STATUS_CODES = {
 
-    // ==========================
     // Success
-    // ==========================
     OK: 200,
     CREATED: 201,
     NO_CONTENT: 204,
 
-    // ==========================
     // Client Errors
-    // ==========================
     BAD_REQUEST: 400,
     UNAUTHORIZED: 401,
     FORBIDDEN: 403,
@@ -17,25 +13,19 @@ export const STATUS_CODES = {
     CONFLICT: 409,
     UNPROCESSABLE_ENTITY: 422,
 
-    // ==========================
     // Server Errors
-    // ==========================
     INTERNAL_SERVER_ERROR: 500
 };
 
 export const MESSAGES = {
 
-    // ==========================
     // Authentication
-    // ==========================
     USER_REGISTERED: "User registered successfully.",
     LOGIN_SUCCESSFUL: "Login successful.",
     LOGOUT_SUCCESSFUL: "Logout successful.",
     PROFILE_FETCHED: "Profile fetched successfully.",
 
-    // ==========================
     // User Errors
-    // ==========================
     USER_ALREADY_EXISTS: "User already exists.",
     USER_NOT_FOUND: "User not found.",
     INVALID_CREDENTIALS: "Invalid email or password.",
@@ -44,38 +34,28 @@ export const MESSAGES = {
     INVALID_TOKEN: "Invalid or expired token.",
     TOKEN_REQUIRED: "Authorization token is required.",
 
-    // ==========================
     // Income
-    // ==========================
     INCOME_ADDED: "Income added successfully.",
     INCOME_UPDATED: "Income updated successfully.",
     INCOME_DELETED: "Income deleted successfully.",
     INCOME_FETCHED: "Income fetched successfully.",
     INCOME_NOT_FOUND: "Income not found.",
 
-    // ==========================
     // Expense
-    // ==========================
     EXPENSE_ADDED: "Expense added successfully.",
     EXPENSE_UPDATED: "Expense updated successfully.",
     EXPENSE_DELETED: "Expense deleted successfully.",
     EXPENSE_FETCHED: "Expense fetched successfully.",
     EXPENSE_NOT_FOUND: "Expense not found.",
 
-    // ==========================
     // Dashboard
-    // ==========================
     DASHBOARD_FETCHED: "Dashboard data fetched successfully.",
 
-    // ==========================
     // Reports
-    // ==========================
     PDF_GENERATED: "PDF report generated successfully.",
     EXCEL_GENERATED: "Excel report generated successfully.",
 
-    // ==========================
     // Validation
-    // ==========================
     VALIDATION_ERROR: "Validation failed.",
 
     // Name Validation

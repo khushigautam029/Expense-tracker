@@ -1,5 +1,5 @@
 import { Notification } from "../models/index.js";
-import asyncHandler from "../utils/asyncHandler.js"; // Adjust relative path as needed
+import asyncHandler from "../utils/asyncHandler.js";
 import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
 
 export const getNotifications = asyncHandler(async (req, res) => {

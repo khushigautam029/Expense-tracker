@@ -36,7 +36,6 @@ app.get("/", (req, res) => {
     });
 });
 
-// IMPORTANT: Error handler should be after routes
 app.use(errorHandler);
 
 export default app;

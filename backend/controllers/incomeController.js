@@ -19,14 +19,12 @@ const getMonthFilter = (month) => {
 };
 
 export const addIncome = asyncHandler(async (req, res) => {
-    // Cast string inputs from frontend form to numbers
     const payload = {
         ...req.body,
         amount: req.body.amount !== "" && req.body.amount !== undefined ? Number(req.body.amount) : req.body.amount,
         sourceId: req.body.sourceId !== "" && req.body.sourceId !== undefined ? Number(req.body.sourceId) : req.body.sourceId,
     };
 
-    // Validate payload against updated Joi schema
     const { error } = incomeSchema.validate(payload);
 
     if (error) {
@@ -38,7 +36,6 @@ export const addIncome = asyncHandler(async (req, res) => {
 
     const { title, amount, sourceId, date, notes } = payload;
 
-    // Verify source exists in `sources` table
     const source = await Source.findByPk(sourceId);
 
     if (!source) {

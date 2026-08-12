@@ -36,9 +36,6 @@ export const register = asyncHandler(async (req, res) => {
         Date.now() + 10 * 60 * 1000
     );
 
-    // A previous email attempt may have timed out after creating the account.
-    // In that case, let the user register again and send a fresh OTP instead
-    // of trapping them behind a "user already exists" error.
     if (existingUser) {
         await existingUser.update({ otp, otpExpiry });
         try {
@@ -91,12 +88,7 @@ export const register = asyncHandler(async (req, res) => {
             "Registration successful. Please verify your email using the OTP.",
         email: user.email,
     });
-    // token: generateToken(user.id),
-    // user: {
-    //     id: user.id,
-    //     name: user.name,
-    //     email: user.email
-    // }
+ 
 });
 
 export const login = asyncHandler(async (req, res) => {
