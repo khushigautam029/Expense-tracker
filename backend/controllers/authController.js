@@ -292,3 +292,88 @@ export const resendOTP = asyncHandler(async (req, res) => {
         email,
     });
 });
+
+
+export const updateProfile = asyncHandler(async (req, res) => {
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+            success: false,
+            message: "Name is required."
+        });
+    }
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success: false,
+            message: MESSAGES.USER_NOT_FOUND
+        });
+    }
+    await user.update({
+        name: name.trim()
+    });
+    return res.status(STATUS_CODES.OK).json({
+        success: true,
+        message: "Profile updated successfully.",
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email
+        }
+    });
+});
+
+
+export const changePassword = asyncHandler(async (req, res) => {
+    const {
+        currentPassword,
+        newPassword,
+        confirmPassword
+    } = req.body;
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+            success: false,
+            message: "All password fields are required."
+        });
+    }
+    if (newPassword !== confirmPassword) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+            success: false,
+            message: "New password and confirm password do not match."
+        });
+    }
+    if (newPassword.length < 8) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+            success: false,
+            message: "New password must be at least 8 characters."
+        });
+    }
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            success: false,
+            message: MESSAGES.USER_NOT_FOUND
+        });
+    }
+    const isPasswordCorrect = await bcrypt.compare(
+        currentPassword,
+        user.password
+    );
+    if (!isPasswordCorrect) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+            success: false,
+            message: "Current password is incorrect."
+        });
+    }
+    const hashedPassword = await bcrypt.hash(
+        newPassword,
+        10
+    );
+    await user.update({
+        password: hashedPassword
+    });
+    return res.status(STATUS_CODES.OK).json({
+        success: true,
+        message: "Password updated successfully."
+    });
+});

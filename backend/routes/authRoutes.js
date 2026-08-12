@@ -1,12 +1,14 @@
 import express from "express";
 import {
+    changePassword,
     deleteUserById,
     getAllUsers,
     getProfile,
     login,
     register,
     resendOTP,
-    verifyOTP,
+    updateProfile,
+    verifyOTP
 } from "../controllers/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import loginLimiter from "../utils/rateLimiter.js";
@@ -19,4 +21,7 @@ router.get("/users", authMiddleware, getAllUsers);
 router.delete("/:id", authMiddleware, deleteUserById);
 router.post("/verify-otp", verifyOTP);
 router.post("/resend-otp", resendOTP);
+router.put("/update-profile", authMiddleware, updateProfile);
+router.put("/change-password", authMiddleware, changePassword);
+
 export default router;

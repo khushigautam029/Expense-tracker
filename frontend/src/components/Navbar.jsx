@@ -606,7 +606,7 @@ const Navbar = ({ collapsed = false }) => {
                             <div className=" absolute right-0 mt-2 w-64 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 shadow-lg transition-all z-50">
                                 {/* Header / User Info */}
                                 <div className="border-b border-slate-100 px-3 py-2.5">
-                                    <p className="text-sm font-semibold border-slate-100 dark:border-slate-700">
+                                    <p className="text-sm font-semibold border-slate-100 dark:border-slate-700 dark:text-white ">
                                         {user.name || "Guest User"}
                                     </p>
                                     <p className="text-xs text-slate-800 dark:text-white truncate">

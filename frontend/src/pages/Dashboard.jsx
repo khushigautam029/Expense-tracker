@@ -5,8 +5,8 @@ import {
     CreditCard,
     Wallet,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { errorToast } from "../utils/swal";
-
 const COLORS = [
     "#6366F1",
     "#22C55E",
@@ -71,7 +71,7 @@ const SummaryCard = ({
 const Dashboard = () => {
 
     const monthInputRef = useRef(null);
-
+    const navigate = useNavigate();
     const [selectedMonth, setSelectedMonth] = useState(
         new Date().toISOString().slice(0, 7)
     );
@@ -163,8 +163,6 @@ const Dashboard = () => {
                 new Date(b.createdAt) - new Date(a.createdAt)
         )
         .slice(0, 5);
-
-    // console.log(recentTransactions.length);
 
     return (
         <div className="space-y-6">
@@ -294,7 +292,7 @@ const Dashboard = () => {
                 </div>
             </div>
             {/* Recent Transactions */}
-            
+
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 transition-colors duration-300">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-5 py-4">
                     <div>
@@ -305,7 +303,10 @@ const Dashboard = () => {
                             Your latest income and expenses
                         </p>
                     </div>
-                    <button className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                    <button
+                        onClick={() => navigate("/transactions")}
+                        className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                    >
                         View All
                     </button>
                 </div>

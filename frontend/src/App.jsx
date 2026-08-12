@@ -19,6 +19,7 @@ import Notifications from "./pages/Notification";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import Reports from "./pages/Reports";
+import Transactions from "./pages/Transaction";
 import VerifyOTP from "./pages/VerifyOTP";
 
 const Layout = ({ children }) => {
@@ -52,32 +53,33 @@ const Layout = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
-    <NotificationProvider>
-      <Routes>
-        {/* Default route */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+      <NotificationProvider>
+        <Routes>
+          {/* Default route */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Public */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify-otp" element={<VerifyOTP />} />
+          {/* Public */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
 
-        {/* Profile */}
-        <Route path="/profile" element={<Layout><ProtectedRoute><Profile /></ProtectedRoute></Layout>} />
-        {/* Dashboard */}
-        <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
-        {/* Income */}
-        <Route path="/income" element={<Layout><ProtectedRoute><Income /></ProtectedRoute></Layout>} />
-        {/* Expenses */}
-        <Route path="/expenses" element={<Layout><ProtectedRoute><Expenses /></ProtectedRoute></Layout>} />
-        {/* Reports */}
-        <Route path="/reports" element={<Layout><ProtectedRoute><Reports /></ProtectedRoute></Layout>} />
-        {/* Notifications */}
-        <Route path="/notifications" element={<Layout><ProtectedRoute><Notifications /></ProtectedRoute></Layout>}/>
-        
-        {/* Not found */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* Profile */}
+          <Route path="/profile" element={<Layout><ProtectedRoute><Profile /></ProtectedRoute></Layout>} />
+          {/* Dashboard */}
+          <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
+          {/* Income */}
+          <Route path="/income" element={<Layout><ProtectedRoute><Income /></ProtectedRoute></Layout>} />
+          {/* Expenses */}
+          <Route path="/expenses" element={<Layout><ProtectedRoute><Expenses /></ProtectedRoute></Layout>} />
+          {/* Reports */}
+          <Route path="/reports" element={<Layout><ProtectedRoute><Reports /></ProtectedRoute></Layout>} />
+          {/* Notifications */}
+          <Route path="/notifications" element={<Layout><ProtectedRoute><Notifications /></ProtectedRoute></Layout>} />
+          {/* Transaction */}
+          <Route path="/transactions" element={<Layout> <ProtectedRoute> <Transactions /> </ProtectedRoute></Layout>}/>
+          {/* Not found */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </NotificationProvider>
     </BrowserRouter>
   );
