@@ -14,9 +14,7 @@ export const register = asyncHandler(async (req, res) => {
             message: error.details[0].message
         });
     }
-
     const { name, email, password, confirmPassword } = req.body;
-
     const existingUser = await User.findOne({
         where: { email }
     });
