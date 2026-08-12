@@ -15,8 +15,6 @@ const createNotification = async ({
         });
     } catch (error) {
         console.error("Notification creation error:", error.message);
-
-        // Don't stop the main operation if notification creation fails
         return null;
     }
 };
