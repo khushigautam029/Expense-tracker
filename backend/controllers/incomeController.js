@@ -19,6 +19,7 @@ const getMonthFilter = (month) => {
 };
 
 export const addIncome = asyncHandler(async (req, res) => {
+    //Converting string to number
     const payload = {
         ...req.body,
         amount: req.body.amount !== "" && req.body.amount !== undefined ? Number(req.body.amount) : req.body.amount,

@@ -60,7 +60,6 @@ export const register = asyncHandler(async (req, res) => {
         name,
         email,
         password: hashedPassword,
-
         otp,
         otpExpiry,
 
@@ -71,9 +70,7 @@ export const register = asyncHandler(async (req, res) => {
         sendOTPEmail(email, otp);
     } catch (error) {
         console.log("Email Error:", error.message);
-
         await user.destroy();
-
         return res.status(500).json({
             success: false,
             message: MESSAGES.UNABLE_TO_SEND_OTP
@@ -86,7 +83,7 @@ export const register = asyncHandler(async (req, res) => {
             "Registration successful. Please verify your email using the OTP.",
         email: user.email,
     });
- 
+
 });
 
 export const login = asyncHandler(async (req, res) => {
@@ -179,7 +176,7 @@ export const getAllUsers = asyncHandler(async (req, res) => {
         }
     });
 
-    res.status(200).json({
+    res.status(STATUS_CODES.OK).json({
         success: true,
         users
     });
