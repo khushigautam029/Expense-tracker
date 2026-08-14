@@ -10,6 +10,7 @@ import { changePasswordSchema, loginSchema, registerSchema } from "../validation
 
 export const register = asyncHandler(async (req, res) => {
     const { error } = registerSchema.validate(req.body);
+
     if (error) {
         return sendError(
             res,
@@ -17,9 +18,11 @@ export const register = asyncHandler(async (req, res) => {
             error.details[0].message
         );
     }
-    const { name, email, password, confirmPassword } = req.body;
+
+    const { name, email, password } = req.body;
+
     let existingUser = await User.findOne({
-        where: { email }
+        where: { email },
     });
 
     if (existingUser?.isVerified) {
@@ -30,32 +33,42 @@ export const register = asyncHandler(async (req, res) => {
         );
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    const otp = Math.floor(
+        100000 + Math.random() * 900000
+    ).toString();
+
+    const otpExpiry = new Date(
+        Date.now() + 10 * 60 * 1000
+    );
 
     if (existingUser) {
         await existingUser.update({
             otp,
-            otpExpiry
+            otpExpiry,
         });
     } else {
         const hashedPassword = await bcrypt.hash(password, 10);
-        await User.create({
+
+        existingUser = await User.create({
             name,
             email,
             password: hashedPassword,
             otp,
             otpExpiry,
-            isVerified: false
+            isVerified: false,
         });
     }
 
-    sendOTPEmail(email, otp);
+    // Send email without blocking the API response
+    sendOTPEmail(email, otp).catch((error) => {
+        console.error("OTP Email Error:", error);
+    });
+
     return sendSuccess(
         res,
         STATUS_CODES.CREATED,
         MESSAGES.REGISTRATION_SUCCESSFUL_VERIFY_EMAIL,
-        { email }
+        { email: existingUser.email }
     );
 });
 

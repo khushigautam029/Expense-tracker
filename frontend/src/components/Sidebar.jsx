@@ -93,19 +93,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 </nav>
             </div>
 
-            {/* Bottom */}
-            <div className="absolute bottom-0 left-0 w-full border-t border-slate-100 dark:border-slate-700 p-3">
-                <button
-                    className={`
-                        flex w-full items-center gap-3
-                        rounded-lg px-3 py-3
-                        text-sm font-medium text-slate-500 dark:text-slate-400
-                        transition hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 dark:hover:text-red-400
-                        ${collapsed ? "justify-center" : ""}
-                    `}
-                >
-                </button>
-            </div>
+            
         </aside>
     );
 };
