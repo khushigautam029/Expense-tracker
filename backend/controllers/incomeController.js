@@ -42,7 +42,7 @@ export const addIncome = asyncHandler(async (req, res) => {
     if (!source) {
         return res.status(STATUS_CODES.NOT_FOUND).json({
             success: false,
-            message: "Selected source does not exist.",
+            message: MESSAGES.SELECTED_SOURCE_DOES_NOT_EXIST,
         });
     }
 

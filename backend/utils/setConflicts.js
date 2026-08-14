@@ -105,10 +105,20 @@ export const MESSAGES = {
     SOURCE_ALREADY_EXIST:"Source already exists.",
     SOURCE_ADDED_SUCCESSFULLY:"Source added successfully",
     SOURCE_NOT_FOUND: "Source not found",
+    SELECTED_SOURCE_DOES_NOT_EXIST:"Selected source does not exist.",
 
     ALL_NOTIFICATION_DELETED_SUCCESSFULLY:"All notifications deleted successfully",
     NOTIFICATION_NOT_FOUND:"Notification not found.",
     NOTIFICATION_MARKED_AS_READ:"Notification marked as read.",
     ALL_NOTIFICATION_MARKED_AS_READ:"All notifications marked as read.",
-    NOTIFICATION_DELETED_SUCCESSFULLY:"Notification deleted successfully."
+    NOTIFICATION_DELETED_SUCCESSFULLY:"Notification deleted successfully.",
+
+    TOO_MANY_REQUEST:"Too many requests. Please try again later.",
+    TOO_MANY_LOGIN_ATTEMPT:"Too many login attempts. Please try again after 15 minute.",
+    TOO_MANY_OTP_REQUESTS:"Too many OTP requests. Please try again later.",
+    YOUR_SESSION_IS_INVALID_OR_EXPIRED:"Your session is invalid or has expired. Please sign in again.",
+
+    PASSWORD_DOES_NOT_MATCH:"Passwords do not match.",
+    CONFIRM_PASSWORD_IS_REQUIRED:"Confirm password is required.",
+    CURRENT_PASSWORD_IS_REQUIRED:"Current password is required."
 };

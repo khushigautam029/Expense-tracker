@@ -41,8 +41,8 @@ export const registerSchema = Joi.object({
         .valid(Joi.ref("password"))
         .required()
         .messages({
-            "any.only": "Passwords do not match.",
-            "any.required": "Confirm password is required."
+            "any.only": MESSAGES.PASSWORD_DOES_NOT_MATCH,
+            "any.required":MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
         }),
 
     gender: Joi.string()
@@ -63,8 +63,8 @@ export const changePasswordSchema = Joi.object({
     currentPassword: Joi.string()
         .required()
         .messages({
-            "string.empty": "Current password is required.",
-            "any.required": "Current password is required."
+            "string.empty": MESSAGES.CURRENT_PASSWORD_IS_REQUIRED,
+            "any.required": MESSAGES.CURRENT_PASSWORD_IS_REQUIRED
         }),
 
     newPassword: passwordSchema,
@@ -73,7 +73,7 @@ export const changePasswordSchema = Joi.object({
         .valid(Joi.ref("newPassword"))
         .required()
         .messages({
-            "any.only": "Passwords do not match.",
-            "any.required": "Confirm password is required."
+            "any.only": MESSAGES.PASSWORD_DOES_NOT_MATCH,
+            "any.required": MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
         })
 });

@@ -21,7 +21,7 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
     } catch (error) {
         return res.status(STATUS_CODES.UNAUTHORIZED).json({
             success: false,
-            message: "Your session is invalid or has expired. Please sign in again."
+            message: MESSAGES.YOUR_SESSION_IS_INVALID_OR_EXPIRED
         });
     }
 
