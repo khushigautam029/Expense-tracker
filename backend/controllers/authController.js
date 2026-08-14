@@ -125,7 +125,18 @@ export const getProfile = asyncHandler(async (req, res) => {
 });
 
 export const deleteUserById = asyncHandler(async (req, res) => {
-    const user = await User.findByPk(req.params.id);
+    const userId = Number(req.params.id);
+
+    if (userId !== req.user.id) {
+        return sendError(
+            res,
+            STATUS_CODES.FORBIDDEN,
+            MESSAGES.ACCESS_DENIED
+        );
+    }
+
+    const user = await User.findByPk(userId);
+
     if (!user) {
         return sendError(
             res,
@@ -133,9 +144,11 @@ export const deleteUserById = asyncHandler(async (req, res) => {
             MESSAGES.USER_NOT_FOUND
         );
     }
-    await transactionHandler(sequelize, async (transaction) => {
+
+    await transactionHandler(async (transaction) => {
         await user.destroy({ transaction });
     });
+
     return sendSuccess(
         res,
         STATUS_CODES.OK,

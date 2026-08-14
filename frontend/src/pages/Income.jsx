@@ -624,7 +624,12 @@ const Income = () => {
                                     placeholder="Income Title"
                                     value={newIncome.title}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.title ? "border-red-500 focus:ring-1 focus:ring-red-500" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                    className={`w-full rounded-lg border p-3 outline-none transition bg-white dark:bg-slate-900
+                                        text-slate-800 dark:text-white
+                                        placeholder:text-slate-400 dark:placeholder:text-slate-500${
+                                        errors.title
+                                        ? "border-red-500 focus:ring-1 focus:ring-red-500"
+                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         }`}
                                 />
                                 {errors.title && (
@@ -637,7 +642,10 @@ const Income = () => {
                                     name="sourceId"
                                     value={newIncome.sourceId}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.sourceId ? "border-red-500 focus:ring-1 focus:ring-red-500" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
+                                    className={`w-full rounded-lg border p-3 outline-none transition bg-white dark:bg-slate-900
+                                            text-slate-800 dark:text-white
+                                            placeholder:text-slate-400 dark:placeholder:text-slate-500
+                                        ${errors.sourceId ? "border-red-500 focus:ring-1 focus:ring-red-500" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
                                         }`}
                                 >
                                     <option value="">Select Source</option>
@@ -660,7 +668,10 @@ const Income = () => {
                                     min="0"
                                     value={newIncome.amount}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.amount ? "border-red-500 focus:ring-1 focus:ring-red-500" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                    className={`w-full rounded-lg border p-3 outline-none transition
+                                    bg-white dark:bg-slate-900
+                                        text-slate-800 dark:text-white
+                                        placeholder:text-slate-400 dark:placeholder:text-slate-500${errors.amount ? "border-red-500 focus:ring-1 focus:ring-red-500" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         }`}
                                 />
                                 {errors.amount && (
@@ -677,7 +688,10 @@ const Income = () => {
                                     value={newIncome.date}
                                     onKeyDown={(e) => e.preventDefault()}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.date ? "border-red-500 focus:ring-1 focus:ring-red-500" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                    className={`w-full rounded-lg border p-3 outline-none transition 
+                                    bg-white dark:bg-slate-900
+                                    text-slate-800 dark:text-white
+                                    placeholder:text-slate-400 dark:placeholder:text-slate-500${errors.date ? "border-red-500 focus:ring-1 focus:ring-red-500" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         }`}
                                 />
                                 {errors.date && (

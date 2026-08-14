@@ -577,9 +577,12 @@ const Expenses = () => {
                                     placeholder="Expense Title"
                                     value={newExpense.title}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.title
-                                        ? "border-red-500 focus:border-red-500"
-                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
+                                    className={`w-full rounded-lg border p-3 outline-none transition 
+                                    bg-white dark:bg-slate-900
+                                    text-slate-800 dark:text-white
+                                    placeholder:text-slate-400 dark:placeholder:text-slate-500${errors.title
+                                            ? "border-red-500 focus:border-red-500"
+                                            : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
                                         }`}
                                 />
                                 {errors.title && (
@@ -595,9 +598,13 @@ const Expenses = () => {
                                     placeholder="Category"
                                     value={newExpense.category}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.category
-                                        ? "border-red-500 focus:border-red-500"
-                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
+                                    className={`w-full rounded-lg border p-3 outline-none transition
+                                    bg-white dark:bg-slate-900
+                                    text-slate-800 dark:text-white
+                                    placeholder:text-slate-400 dark:placeholder:text-slate-500
+                                    ${errors.category
+                                            ? "border-red-500 focus:border-red-500"
+                                            : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
                                         }`}
                                 />
                                 {errors.category && (
@@ -614,9 +621,13 @@ const Expenses = () => {
                                     min="0"
                                     value={newExpense.amount}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.amount
-                                        ? "border-red-500 focus:border-red-500"
-                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
+                                    className={`w-full rounded-lg border p-3 outline-none transition 
+                                    bg-white dark:bg-slate-900
+                                    text-slate-800 dark:text-white
+                                    placeholder:text-slate-400 dark:placeholder:text-slate-500
+                                    ${errors.amount
+                                            ? "border-red-500 focus:border-red-500"
+                                            : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
                                         }`}
                                 />
                                 {errors.amount && (
@@ -651,9 +662,13 @@ const Expenses = () => {
                                     placeholder="Notes"
                                     value={newExpense.notes}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.notes
-                                        ? "border-red-500 focus:border-red-500"
-                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
+                                    className={`w-full rounded-lg border p-3 outline-none transition
+                                    bg-white dark:bg-slate-900
+                                    text-slate-800 dark:text-white
+                                    placeholder:text-slate-400 dark:placeholder:text-slate-500
+                                    ${errors.notes
+                                            ? "border-red-500 focus:border-red-500"
+                                            : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
                                         }`}
                                 />
                                 {errors.notes && (
