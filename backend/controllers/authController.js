@@ -6,7 +6,7 @@ import { sendOTPEmail } from "../utils/mailService.js";
 import { sendError, sendSuccess } from "../utils/responseHandler.js";
 import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
 import { transactionHandler } from "../utils/transactionHandler.js";
-import { changePasswordSchema, loginSchema, registerSchema } from "../validation/authValidation.js";
+import { changePasswordSchema, loginSchema, registerSchema, resendOTPSchema, verifyOTPSchema } from "../validation/authValidation.js";
 
 export const register = asyncHandler(async (req, res) => {
     const { error } = registerSchema.validate(req.body);
@@ -176,7 +176,18 @@ export const getAllUsers = asyncHandler(async (req, res) => {
 });
 
 export const verifyOTP = asyncHandler(async (req, res) => {
+    const { error } = verifyOTPSchema.validate(req.body);
+
+    if (error) {
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            error.details[0].message
+        );
+    }
+
     const { email, otp } = req.body;
+
     const user = await User.findOne({
         where: { email }
     });
@@ -213,24 +224,18 @@ export const verifyOTP = asyncHandler(async (req, res) => {
         );
     }
 
-    await transactionHandler(async (transaction) => {
-        await user.update(
-            {
-                isVerified: true,
-                otp: null,
-                otpExpiry: null
-            },
-            { transaction }
-        );
+    await user.update({
+        isVerified: true,
+        otp: null,
+        otpExpiry: null
     });
 
-    const token = generateToken(user.id);
     return sendSuccess(
         res,
         STATUS_CODES.OK,
         MESSAGES.EMAIL_VERIFIED_SUCCESSFULLY,
         {
-            token,
+            token: generateToken(user.id),
             user: {
                 id: user.id,
                 name: user.name,
@@ -241,6 +246,16 @@ export const verifyOTP = asyncHandler(async (req, res) => {
 });
 
 export const resendOTP = asyncHandler(async (req, res) => {
+    const { error } = resendOTPSchema.validate(req.body);
+
+    if (error) {
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            error.details[0].message
+        );
+    }
+
     const { email } = req.body;
 
     const user = await User.findOne({
@@ -263,15 +278,20 @@ export const resendOTP = asyncHandler(async (req, res) => {
         );
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    const otp = Math.floor(
+        100000 + Math.random() * 900000
+    ).toString();
+
+    const otpExpiry = new Date(
+        Date.now() + 10 * 60 * 1000
+    );
 
     await user.update({
         otp,
         otpExpiry
     });
 
-    await sendOTPEmail(email, otp);
+    sendOTPEmail(email, otp);
 
     return sendSuccess(
         res,
@@ -280,7 +300,6 @@ export const resendOTP = asyncHandler(async (req, res) => {
         { email }
     );
 });
-
 
 export const updateProfile = asyncHandler(async (req, res) => {
     const name = req.body.name?.trim();

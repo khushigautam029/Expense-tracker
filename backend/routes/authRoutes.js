@@ -11,7 +11,7 @@ import {
     verifyOTP
 } from "../controllers/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
-import loginLimiter from "../utils/rateLimiter.js";
+import loginLimiter, { otpLimiter } from "../utils/rateLimiter.js";
 
 const router = express.Router();
 router.post("/register", register);
@@ -19,8 +19,8 @@ router.post("/login",loginLimiter, login);
 router.get("/profile",authMiddleware, getProfile);
 router.get("/users", authMiddleware, getAllUsers);
 router.delete("/:id", authMiddleware, deleteUserById);
-router.post("/verify-otp", verifyOTP);
-router.post("/resend-otp", resendOTP);
+router.post("/verify-otp", otpLimiter, verifyOTP);
+router.post("/resend-otp", otpLimiter, resendOTP);
 router.put("/update-profile", authMiddleware, updateProfile);
 router.put("/change-password", authMiddleware, changePassword);
 

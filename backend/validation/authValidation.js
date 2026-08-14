@@ -77,3 +77,35 @@ export const changePasswordSchema = Joi.object({
             "any.required": MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
         })
 });
+
+
+export const verifyOTPSchema = Joi.object({
+    email: Joi.string()
+        .email()
+        .required()
+        .messages({
+            "string.email": MESSAGES.INVALID_EMAIL,
+            "string.empty": MESSAGES.EMAIL_REQUIRED,
+            "any.required": MESSAGES.EMAIL_REQUIRED,
+        }),
+
+    otp: Joi.string()
+        .pattern(/^\d{6}$/)
+        .required()
+        .messages({
+            "string.pattern.base": "OTP must be exactly 6 digits.",
+            "string.empty": "OTP is required.",
+            "any.required": "OTP is required.",
+        }),
+});
+
+export const resendOTPSchema = Joi.object({
+    email: Joi.string()
+        .email()
+        .required()
+        .messages({
+            "string.email": MESSAGES.INVALID_EMAIL,
+            "string.empty": MESSAGES.EMAIL_REQUIRED,
+            "any.required": MESSAGES.EMAIL_REQUIRED,
+        }),
+});
