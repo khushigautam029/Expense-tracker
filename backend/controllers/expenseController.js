@@ -2,9 +2,9 @@ import { Op } from "sequelize";
 import { Expense } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import createNotification from "../utils/createNotifications.js";
+import { sendSuccess } from "../utils/responseHandler.js";
 import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
 import { expenseSchema } from "../validation/expenseValidation.js";
-
 
 const getMonthFilter = (month) => {
     if (!month) return {};
@@ -15,41 +15,52 @@ const getMonthFilter = (month) => {
 };
 
 export const addExpense = asyncHandler(async (req, res) => {
-    req.body.category =
-        req.body.category.charAt(0).toUpperCase() +
-        req.body.category.slice(1).toLowerCase();
+    const rawCategory = req.body.category?.trim();
 
-    const { error } = expenseSchema.validate(req.body);
+    const category = rawCategory
+        ? rawCategory.charAt(0).toUpperCase() +
+        rawCategory.slice(1).toLowerCase()
+        : rawCategory;
+
+    const data = {
+        ...req.body,
+        category,
+    };
+
+    const { error } = expenseSchema.validate(data);
 
     if (error) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: error.details[0].message,
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            error.details[0].message
+        );
     }
 
-    const { title, amount, category, date, notes } = req.body;
+    const { title, amount, date, notes } = data;
+    const userId = req.user.id;
 
-    const expense = await Expense.create({
+    await Expense.create({
         title,
         amount,
         category,
         date,
         notes,
-        userId: req.user.id,
+        userId,
     });
 
     await createNotification({
-        userId: req.user.id,
+        userId,
         title: "Expense Added",
         message: `You added an expense of ₹${amount} for ${category}.`,
         type: "expense",
     });
 
-    res.status(STATUS_CODES.CREATED).json({
-        success: true,
-        message: MESSAGES.EXPENSE_ADDED,
-    });
+    return sendSuccess(
+        res,
+        STATUS_CODES.CREATED,
+        MESSAGES.EXPENSE_ADDED
+    );
 });
 
 export const getAllExpenses = asyncHandler(async (req, res) => {

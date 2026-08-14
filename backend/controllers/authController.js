@@ -18,13 +18,10 @@ export const register = asyncHandler(async (req, res) => {
             error.details[0].message
         );
     }
-
     const { name, email, password } = req.body;
-
     let existingUser = await User.findOne({
         where: { email },
     });
-
     if (existingUser?.isVerified) {
         return sendError(
             res,
@@ -32,15 +29,12 @@ export const register = asyncHandler(async (req, res) => {
             MESSAGES.USER_ALREADY_EXISTS
         );
     }
-
     const otp = Math.floor(
         100000 + Math.random() * 900000
     ).toString();
-
     const otpExpiry = new Date(
         Date.now() + 10 * 60 * 1000
     );
-
     if (existingUser) {
         await existingUser.update({
             otp,
@@ -59,7 +53,6 @@ export const register = asyncHandler(async (req, res) => {
         });
     }
 
-    // Send email without blocking the API response
     sendOTPEmail(email, otp).catch((error) => {
         console.error("OTP Email Error:", error);
     });
