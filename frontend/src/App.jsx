@@ -38,14 +38,16 @@ const Layout = ({ children }) => {
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
       {/* Dynamic margin changes based on collapsed state */}
-      <div className={`transition-all duration-300 ${collapsed ? "ml-[76px]" : "ml-[240px]"}`}>
-        <Navbar collapsed={collapsed} />
-        <main className="min-h-screen">
-          <div className="p-6">
-            {children}
-          </div>
-        </main>
-      </div>
+      <NotificationProvider>
+        <div className={`transition-all duration-300 ${collapsed ? "ml-[76px]" : "ml-[240px]"}`}>
+          <Navbar collapsed={collapsed} />
+          <main className="min-h-screen">
+            <div className="p-6">
+              {children}
+            </div>
+          </main>
+        </div>
+      </NotificationProvider>
     </div>
   );
 };
@@ -53,8 +55,7 @@ const Layout = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
-      <NotificationProvider>
-        <Routes>
+      <Routes>
           {/* Default route */}
           <Route path="/" element={<Navigate to="/login" replace />} />
 
@@ -64,23 +65,22 @@ function App() {
           <Route path="/verify-otp" element={<VerifyOTP />} />
 
           {/* Profile */}
-          <Route path="/profile" element={<Layout><ProtectedRoute><Profile /></ProtectedRoute></Layout>} />
+          <Route path="/profile" element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>} />
           {/* Dashboard */}
-          <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
           {/* Income */}
-          <Route path="/income" element={<Layout><ProtectedRoute><Income /></ProtectedRoute></Layout>} />
+          <Route path="/income" element={<ProtectedRoute><Layout><Income /></Layout></ProtectedRoute>} />
           {/* Expenses */}
-          <Route path="/expenses" element={<Layout><ProtectedRoute><Expenses /></ProtectedRoute></Layout>} />
+          <Route path="/expenses" element={<ProtectedRoute><Layout><Expenses /></Layout></ProtectedRoute>} />
           {/* Reports */}
-          <Route path="/reports" element={<Layout><ProtectedRoute><Reports /></ProtectedRoute></Layout>} />
+          <Route path="/reports" element={<ProtectedRoute><Layout><Reports /></Layout></ProtectedRoute>} />
           {/* Notifications */}
-          <Route path="/notifications" element={<Layout><ProtectedRoute><Notifications /></ProtectedRoute></Layout>} />
+          <Route path="/notifications" element={<ProtectedRoute><Layout><Notifications /></Layout></ProtectedRoute>} />
           {/* Transaction */}
-          <Route path="/transactions" element={<Layout> <ProtectedRoute> <Transactions /> </ProtectedRoute></Layout>}/>
+          <Route path="/transactions" element={<ProtectedRoute><Layout><Transactions /></Layout></ProtectedRoute>} />
           {/* Not found */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </NotificationProvider>
+      </Routes>
     </BrowserRouter>
   );
 }

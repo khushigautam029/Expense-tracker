@@ -1,6 +1,19 @@
 import Joi from "joi";
 import { MESSAGES } from "../utils/setConflicts.js";
 
+const passwordSchema = Joi.string()
+    .min(6)
+    .pattern(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/
+    )
+    .required()
+    .messages({
+        "string.empty": MESSAGES.PASSWORD_REQUIRED,
+        "any.required": MESSAGES.PASSWORD_REQUIRED,
+        "string.min": MESSAGES.PASSWORD_MIN_LENGTH,
+        "string.pattern.base": MESSAGES.PASSWORD_PATTERN
+    });
+
 export const registerSchema = Joi.object({
     name: Joi.string()
         .min(3)
@@ -10,7 +23,7 @@ export const registerSchema = Joi.object({
             "string.empty": MESSAGES.NAME_REQUIRED,
             "string.min": MESSAGES.NAME_MIN_LENGTH,
             "string.max": MESSAGES.NAME_MAX_LENGTH,
-            "any.required": MESSAGES.NAME_REQUIRED,
+            "any.required": MESSAGES.NAME_REQUIRED
         }),
 
     email: Joi.string()
@@ -20,29 +33,22 @@ export const registerSchema = Joi.object({
             "string.email": MESSAGES.INVALID_EMAIL,
             "string.empty": MESSAGES.EMAIL_REQUIRED,
             "any.required": MESSAGES.EMAIL_REQUIRED
-    }),
-
-    password: Joi.string()
-        .min(6)
-        .pattern(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/
-        )
-        .required()
-        .messages({
-            "string.pattern.base":
-                MESSAGES.PASSWORD_PATTERN
         }),
+
+    password: passwordSchema,
 
     confirmPassword: Joi.any()
         .valid(Joi.ref("password"))
         .required()
         .messages({
-            "any.only": "Passwords do not match"
+            "any.only": "Passwords do not match.",
+            "any.required": "Confirm password is required."
         }),
 
-    gender: Joi.string().valid("Male", "Female", "Other").optional(),
+    gender: Joi.string()
+        .valid("Male", "Female", "Other")
+        .optional()
 });
-
 
 export const loginSchema = Joi.object({
     email: Joi.string()
@@ -51,4 +57,23 @@ export const loginSchema = Joi.object({
 
     password: Joi.string()
         .required()
+});
+
+export const changePasswordSchema = Joi.object({
+    currentPassword: Joi.string()
+        .required()
+        .messages({
+            "string.empty": "Current password is required.",
+            "any.required": "Current password is required."
+        }),
+
+    newPassword: passwordSchema,
+
+    confirmPassword: Joi.any()
+        .valid(Joi.ref("newPassword"))
+        .required()
+        .messages({
+            "any.only": "Passwords do not match.",
+            "any.required": "Confirm password is required."
+        })
 });

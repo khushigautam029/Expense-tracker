@@ -24,6 +24,8 @@ export const MESSAGES = {
     LOGIN_SUCCESSFUL: "Login successful.",
     LOGOUT_SUCCESSFUL: "Logout successful.",
     PROFILE_FETCHED: "Profile fetched successfully.",
+    REGISTRATION_SUCCESSFUL_VERIFY_EMAIL:"Registration successful. Please verify your email using the OTP.",
+    USERS_FETCHED: "User Fetched",
 
     // User Errors
     USER_ALREADY_EXISTS: "User already exists.",
@@ -33,6 +35,7 @@ export const MESSAGES = {
     ACCESS_DENIED: "Access denied.",
     INVALID_TOKEN: "Invalid or expired token.",
     TOKEN_REQUIRED: "Authorization token is required.",
+    USER_DELETED: "User deleted",
 
     // Income
     INCOME_ADDED: "Income added successfully.",

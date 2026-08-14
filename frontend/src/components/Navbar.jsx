@@ -96,10 +96,20 @@ const Navbar = ({ collapsed = false }) => {
                 );
             }
         } catch (error) {
+            if (error.response?.status === 401) {
+                return;
+            }
+
             console.error("Profile Error:", error);
-            const localUser = JSON.parse(
-                localStorage.getItem("user")
-            );
+            const storedUser = localStorage.getItem("user");
+            let localUser = null;
+
+            try {
+                localUser = storedUser ? JSON.parse(storedUser) : null;
+            } catch {
+                localStorage.removeItem("user");
+            }
+
             if (localUser) {
                 setUser(localUser);
             }
@@ -113,6 +123,8 @@ const Navbar = ({ collapsed = false }) => {
                 setUnreadCount(response.unreadCount);
             }
         } catch (error) {
+            if (error.response?.status === 401) return;
+
             console.error("Unread Notification Error:", error);
         }
     };

@@ -102,6 +102,8 @@ const Dashboard = () => {
             const data = await getDashboard(month);
             setDashboard(data);
         } catch (error) {
+            if (error.response?.status === 401) return;
+
             console.error(error);
 
             errorToast(

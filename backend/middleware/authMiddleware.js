@@ -12,10 +12,18 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
         });
     }
 
-    const decoded = jwt.verify(
-        token.replace("Bearer ", ""),
-        process.env.JWT_SECRET
-    );
+    let decoded;
+    try {
+        decoded = jwt.verify(
+            token.replace(/^Bearer\s+/i, ""),
+            process.env.JWT_SECRET
+        );
+    } catch (error) {
+        return res.status(STATUS_CODES.UNAUTHORIZED).json({
+            success: false,
+            message: "Your session is invalid or has expired. Please sign in again."
+        });
+    }
 
     const user = await User.findByPk(decoded.id);
     if (!user) {

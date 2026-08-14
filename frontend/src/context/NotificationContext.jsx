@@ -29,6 +29,8 @@ export const NotificationProvider = ({ children }) => {
             }
 
         } catch (error) {
+            if (error.response?.status === 401) return;
+
             console.error(
                 "Failed to fetch notifications:",
                 error
@@ -49,6 +51,8 @@ export const NotificationProvider = ({ children }) => {
             }
 
         } catch (error) {
+            if (error.response?.status === 401) return;
+
             console.error(
                 "Failed to fetch unread count:",
                 error

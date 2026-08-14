@@ -17,6 +17,7 @@ export const getNotifications = asyncHandler(async (req, res) => {
 });
 
 export const getUnreadCount = asyncHandler(async (req, res) => {
+    
     const count = await Notification.count({
         where: {
             userId: req.user.id,

@@ -3,238 +3,222 @@ import { User } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import generateToken from "../utils/generateToken.js";
 import { sendOTPEmail } from "../utils/mailService.js";
+import { sendError, sendSuccess } from "../utils/responseHandler.js";
 import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
-import { loginSchema, registerSchema } from "../validation/authValidation.js";
+import { transactionHandler } from "../utils/transactionHandler.js";
+import { changePasswordSchema, loginSchema, registerSchema } from "../validation/authValidation.js";
 
 export const register = asyncHandler(async (req, res) => {
     const { error } = registerSchema.validate(req.body);
     if (error) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: error.details[0].message
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            error.details[0].message
+        );
     }
     const { name, email, password, confirmPassword } = req.body;
-    const existingUser = await User.findOne({
+    let existingUser = await User.findOne({
         where: { email }
     });
 
     if (existingUser?.isVerified) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: MESSAGES.USER_ALREADY_EXISTS
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            MESSAGES.USER_ALREADY_EXISTS
+        );
     }
 
-    const otp = Math.floor(
-        100000 + Math.random() * 900000
-    ).toString();
-
-    const otpExpiry = new Date(
-        Date.now() + 10 * 60 * 1000
-    );
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
     if (existingUser) {
-        await existingUser.update({ otp, otpExpiry });
-        try {
-            sendOTPEmail(existingUser.email, otp);
-        } catch (error) {
-            console.log("Email Error:", error.message);
-
-            return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-                success: false,
-                message: MESSAGES.UNABLE_TO_SEND_OTP
-            });
-        }
-
-        return res.status(STATUS_CODES.OK).json({
-            success: true,
-            message: MESSAGES.NEW_OTP_SENT,
-            email: existingUser.email,
+        await existingUser.update({
+            otp,
+            otpExpiry
+        });
+    } else {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await User.create({
+            name,
+            email,
+            password: hashedPassword,
+            otp,
+            otpExpiry,
+            isVerified: false
         });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        otp,
-        otpExpiry,
-
-        isVerified: false,
-    });
-
-    try {
-        sendOTPEmail(email, otp);
-    } catch (error) {
-        console.log("Email Error:", error.message);
-        await user.destroy();
-        return res.status(500).json({
-            success: false,
-            message: MESSAGES.UNABLE_TO_SEND_OTP
-        });
-    }
-
-    res.status(STATUS_CODES.CREATED).json({
-        success: true,
-        message:
-            "Registration successful. Please verify your email using the OTP.",
-        email: user.email,
-    });
-
+    sendOTPEmail(email, otp);
+    return sendSuccess(
+        res,
+        STATUS_CODES.CREATED,
+        MESSAGES.REGISTRATION_SUCCESSFUL_VERIFY_EMAIL,
+        { email }
+    );
 });
 
 export const login = asyncHandler(async (req, res) => {
     const { error } = loginSchema.validate(req.body);
     if (error) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: error.details[0].message
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            error.details[0].message
+        );
     }
-
     const { email, password } = req.body;
-
     const user = await User.findOne({
         where: { email }
     });
-
     if (!user) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: MESSAGES.INVALID_CREDENTIALS
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            MESSAGES.INVALID_CREDENTIALS
+        );
     }
-
     if (!user.isVerified) {
-        return res.status(STATUS_CODES.UNAUTHORIZED).json({
-            success: false,
-            message: MESSAGES.VERIFY_EMAIL_FIRST
-        });
+        return sendError(
+            res,
+            STATUS_CODES.UNAUTHORIZED,
+            MESSAGES.VERIFY_EMAIL_FIRST
+        );
     }
-
-    const match = await bcrypt.compare(
+    const isPasswordValid = await bcrypt.compare(
         password,
         user.password
     );
-
-    if (!match) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: MESSAGES.INVALID_CREDENTIALS
-        });
+    if (!isPasswordValid) {
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            MESSAGES.INVALID_CREDENTIALS
+        );
     }
-
-    res.status(STATUS_CODES.OK).json({
-        success: true,
-        message: MESSAGES.LOGIN_SUCCESSFUL,
-        token: generateToken(user.id),
-        user: {
-            id: user.id,
-            name: user.name,
-            email: user.email
+    const token = generateToken(user.id);
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.LOGIN_SUCCESSFUL,
+        {
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email
+            }
         }
-    });
+    );
 });
 
+
 export const getProfile = asyncHandler(async (req, res) => {
-    res.status(STATUS_CODES.OK).json({
-        success: true,
-        message: MESSAGES.PROFILE_FETCHED,
-        user: {
-            id: req.user.id,
-            name: req.user.name,
-            email: req.user.email
-        }
-    });
+    const { id, name, email } = req.user;
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.PROFILE_FETCHED,
+        { user: { id, name, email } }
+    );
 });
 
 export const deleteUserById = asyncHandler(async (req, res) => {
     const user = await User.findByPk(req.params.id);
-
     if (!user) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success: false,
-            message: MESSAGES.USER_NOT_FOUND
-        });
+        return sendError(
+            res,
+            STATUS_CODES.NOT_FOUND,
+            MESSAGES.USER_NOT_FOUND
+        );
     }
-
-    await user.destroy();
-
-    res.status(STATUS_CODES.OK).json({
-        success: true,
-        message: MESSAGES.USER_DELETED
+    await transactionHandler(sequelize, async (transaction) => {
+        await user.destroy({ transaction });
     });
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.USER_DELETED
+    );
 });
 
 export const getAllUsers = asyncHandler(async (req, res) => {
     const users = await User.findAll({
-        attributes: {
-            exclude: ["password", "otp", "otpExpiry"]
-        }
+        attributes: ["id", "name", "email", "isVerified"]
     });
 
-    res.status(STATUS_CODES.OK).json({
-        success: true,
-        users
-    });
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.USERS_FETCHED,
+        { users }
+    );
 });
 
 export const verifyOTP = asyncHandler(async (req, res) => {
     const { email, otp } = req.body;
-
     const user = await User.findOne({
         where: { email }
     });
 
     if (!user) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success: false,
-            message: MESSAGES.USER_NOT_FOUND
-        });
+        return sendError(
+            res,
+            STATUS_CODES.NOT_FOUND,
+            MESSAGES.USER_NOT_FOUND
+        );
     }
 
     if (user.isVerified) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: MESSAGES.EMAIL_ALREADY_VERIFIED
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            MESSAGES.EMAIL_ALREADY_VERIFIED
+        );
     }
 
     if (user.otp !== otp) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: MESSAGES.INVALID_OTP
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            MESSAGES.INVALID_OTP
+        );
     }
 
-    if (new Date() > new Date(user.otpExpiry)) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: MESSAGES.OTP_EXPIRED
-        });
+    if (!user.otpExpiry || new Date() > new Date(user.otpExpiry)) {
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            MESSAGES.OTP_EXPIRED
+        );
     }
 
-    user.isVerified = true;
-    user.otp = null;
-    user.otpExpiry = null;
-
-    await user.save();
+    await transactionHandler(async (transaction) => {
+        await user.update(
+            {
+                isVerified: true,
+                otp: null,
+                otpExpiry: null
+            },
+            { transaction }
+        );
+    });
 
     const token = generateToken(user.id);
-
-    res.status(STATUS_CODES.CREATED).json({
-        success: true,
-        message: MESSAGES.EMAIL_VERIFIED_SUCCESSFULLY,
-        token,
-        user: {
-            id: user.id,
-            name: user.name,
-            email: user.email
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.EMAIL_VERIFIED_SUCCESSFULLY,
+        {
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email
+            }
         }
-    });
+    );
 });
 
 export const resendOTP = asyncHandler(async (req, res) => {
@@ -245,122 +229,128 @@ export const resendOTP = asyncHandler(async (req, res) => {
     });
 
     if (!user) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success: false,
-            message: MESSAGES.USER_NOT_FOUND
-        });
+        return sendError(
+            res,
+            STATUS_CODES.NOT_FOUND,
+            MESSAGES.USER_NOT_FOUND
+        );
     }
 
     if (user.isVerified) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: "Email is already verified."
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            MESSAGES.EMAIL_ALREADY_VERIFIED
+        );
     }
 
-    const otp = Math.floor(
-        100000 + Math.random() * 900000
-    ).toString();
-
-    const otpExpiry = new Date(
-        Date.now() + 10 * 60 * 1000
-    );
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
     await user.update({
         otp,
-        otpExpiry,
+        otpExpiry
     });
 
     await sendOTPEmail(email, otp);
 
-    res.status(STATUS_CODES.OK).json({
-        success: true,
-        message: "A new OTP has been sent to your email.",
-        email,
-    });
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.NEW_OTP_SENT,
+        { email }
+    );
 });
 
 
 export const updateProfile = asyncHandler(async (req, res) => {
-    const { name } = req.body;
-    if (!name || !name.trim()) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: "Name is required."
-        });
+    const name = req.body.name?.trim();
+    if (!name) {
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            "Name is required."
+        );
     }
+
     const user = await User.findByPk(req.user.id);
     if (!user) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success: false,
-            message: MESSAGES.USER_NOT_FOUND
-        });
+        return sendError(
+            res,
+            STATUS_CODES.NOT_FOUND,
+            MESSAGES.USER_NOT_FOUND
+        );
     }
-    await user.update({
-        name: name.trim()
+    await transactionHandler(async (transaction) => {
+        await user.update(
+            { name },
+            { transaction }
+        );
     });
-    return res.status(STATUS_CODES.OK).json({
-        success: true,
-        message: "Profile updated successfully.",
-        user: {
-            id: user.id,
-            name: user.name,
-            email: user.email
+
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        "Profile updated successfully.",
+        {
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email
+            }
         }
-    });
+    );
 });
 
 
 export const changePassword = asyncHandler(async (req, res) => {
-    const {
-        currentPassword,
-        newPassword,
-        confirmPassword
-    } = req.body;
-    if (!currentPassword || !newPassword || !confirmPassword) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: "All password fields are required."
-        });
+    const { error } = changePasswordSchema.validate(req.body);
+
+    if (error) {
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            error.details[0].message
+        );
     }
-    if (newPassword !== confirmPassword) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: "New password and confirm password do not match."
-        });
-    }
-    if (newPassword.length < 8) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: "New password must be at least 8 characters."
-        });
-    }
+
+    const { currentPassword, newPassword } = req.body;
+
     const user = await User.findByPk(req.user.id);
+
     if (!user) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success: false,
-            message: MESSAGES.USER_NOT_FOUND
-        });
+        return sendError(
+            res,
+            STATUS_CODES.NOT_FOUND,
+            MESSAGES.USER_NOT_FOUND
+        );
     }
+
     const isPasswordCorrect = await bcrypt.compare(
         currentPassword,
         user.password
     );
+
     if (!isPasswordCorrect) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: "Current password is incorrect."
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            "Current password is incorrect."
+        );
     }
-    const hashedPassword = await bcrypt.hash(
-        newPassword,
-        10
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await transactionHandler(async (transaction) => {
+        await user.update(
+            { password: hashedPassword },
+            { transaction }
+        );
+    });
+
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        "Password updated successfully."
     );
-    await user.update({
-        password: hashedPassword
-    });
-    return res.status(STATUS_CODES.OK).json({
-        success: true,
-        message: "Password updated successfully."
-    });
 });

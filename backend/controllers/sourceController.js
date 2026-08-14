@@ -15,7 +15,6 @@ export const getSources = asyncHandler(async (req, res) => {
 
 export const addSource = asyncHandler(async (req, res) => {
     console.log("1. addSource controller reached");
-
     console.log("2. User ID:", req.user.id);
     console.log("3. Request body:", req.body);
     const { name } = req.body;
