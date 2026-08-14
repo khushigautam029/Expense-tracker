@@ -41,10 +41,11 @@ export const errorAlert = (title, text = "") => {
     });
 };
 
-export const errorToast = (title) => {
+export const errorToast = (title, text = "") => {
     return Toast.fire({
         icon: "error",
         title,
+        text,
     });
 };
 

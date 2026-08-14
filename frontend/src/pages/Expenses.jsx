@@ -91,7 +91,7 @@ const Expenses = () => {
     // Helper functions for character, numeric, and spacing validation
     const isPurelyNumeric = (val) => /^\d+$/.test(val.trim());
     const containsLetters = (val) => /[a-zA-Z]/.test(val);
-    
+
     // Checks for leading spaces, trailing spaces, or multiple consecutive middle spaces
     const validateSpacing = (val) => {
         if (!val) return null;
@@ -249,7 +249,11 @@ const Expenses = () => {
             resetModalForm();
         } catch (err) {
             console.log(err);
-            errorToast("Failed", "Unable to add expense.");
+
+            errorToast(
+                "Failed",
+                err.response?.data?.message || "Unable to add expense."
+            );
         }
     };
 
@@ -293,7 +297,11 @@ const Expenses = () => {
             resetModalForm();
         } catch (err) {
             console.log(err);
-            errorToast("Update Failed", "Unable to update expense.");
+
+            errorToast(
+                "Update Failed",
+                err.response?.data?.message || "Unable to update expense."
+            );
         }
     };
 
@@ -312,7 +320,11 @@ const Expenses = () => {
             fetchExpenses();
         } catch (err) {
             console.log(err);
-            errorToast("Delete Failed", "Unable to delete expense.");
+
+            errorToast(
+                "Delete Failed",
+                err.response?.data?.message || "Unable to delete expense."
+            );
         }
     };
 
@@ -565,11 +577,10 @@ const Expenses = () => {
                                     placeholder="Expense Title"
                                     value={newExpense.title}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${
-                                        errors.title
-                                            ? "border-red-500 focus:border-red-500"
-                                            : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
-                                    }`}
+                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.title
+                                        ? "border-red-500 focus:border-red-500"
+                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
+                                        }`}
                                 />
                                 {errors.title && (
                                     <p className="mt-1 text-xs text-red-500">{errors.title}</p>
@@ -584,11 +595,10 @@ const Expenses = () => {
                                     placeholder="Category"
                                     value={newExpense.category}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${
-                                        errors.category
-                                            ? "border-red-500 focus:border-red-500"
-                                            : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
-                                    }`}
+                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.category
+                                        ? "border-red-500 focus:border-red-500"
+                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
+                                        }`}
                                 />
                                 {errors.category && (
                                     <p className="mt-1 text-xs text-red-500">{errors.category}</p>
@@ -604,11 +614,10 @@ const Expenses = () => {
                                     min="0"
                                     value={newExpense.amount}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${
-                                        errors.amount
-                                            ? "border-red-500 focus:border-red-500"
-                                            : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
-                                    }`}
+                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.amount
+                                        ? "border-red-500 focus:border-red-500"
+                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
+                                        }`}
                                 />
                                 {errors.amount && (
                                     <p className="mt-1 text-xs text-red-500">{errors.amount}</p>
@@ -625,11 +634,10 @@ const Expenses = () => {
                                     value={newExpense.date}
                                     onChange={handleChange}
                                     onKeyDown={(e) => e.preventDefault()}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${
-                                        errors.date
-                                            ? "border-red-500 focus:border-red-500"
-                                            : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
-                                    }`}
+                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.date
+                                        ? "border-red-500 focus:border-red-500"
+                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
+                                        }`}
                                 />
                                 {errors.date && (
                                     <p className="mt-1 text-xs text-red-500">{errors.date}</p>
@@ -643,11 +651,10 @@ const Expenses = () => {
                                     placeholder="Notes"
                                     value={newExpense.notes}
                                     onChange={handleChange}
-                                    className={`w-full rounded-lg border p-3 outline-none transition ${
-                                        errors.notes
-                                            ? "border-red-500 focus:border-red-500"
-                                            : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
-                                    }`}
+                                    className={`w-full rounded-lg border p-3 outline-none transition ${errors.notes
+                                        ? "border-red-500 focus:border-red-500"
+                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-white focus:border-blue-500"
+                                        }`}
                                 />
                                 {errors.notes && (
                                     <p className="mt-1 text-xs text-red-500">{errors.notes}</p>

@@ -24,7 +24,7 @@ export const MESSAGES = {
     LOGIN_SUCCESSFUL: "Login successful.",
     LOGOUT_SUCCESSFUL: "Logout successful.",
     PROFILE_FETCHED: "Profile fetched successfully.",
-    REGISTRATION_SUCCESSFUL_VERIFY_EMAIL:"Registration successful. Please verify your email using the OTP.",
+    REGISTRATION_SUCCESSFUL_VERIFY_EMAIL: "Registration successful. Please verify your email using the OTP.",
     USERS_FETCHED: "User Fetched",
 
     // User Errors
@@ -69,13 +69,13 @@ export const MESSAGES = {
     // Email Validation
     EMAIL_REQUIRED: "Email is required.",
     INVALID_EMAIL: "Please enter a valid email address.",
-    EMAIL_ALREADY_VERIFIED:"Email already verified.",
+    EMAIL_ALREADY_VERIFIED: "Email already verified.",
     INVALID_OTP: "Invalid OTP",
-    OTP_EXPIRED:"OTP has expired",
-    EMAIL_VERIFIED_SUCCESSFULLY:"Email verified successfully",
-    UNABLE_TO_SEND_OTP:"Unable to send OTP email.",
-    NEW_OTP_SENT:"A new verification OTP has been sent to your email.",
-    VERIFY_EMAIL_FIRST:"Please verify your email first.",
+    OTP_EXPIRED: "OTP has expired",
+    EMAIL_VERIFIED_SUCCESSFULLY: "Email verified successfully",
+    UNABLE_TO_SEND_OTP: "Unable to send OTP email.",
+    NEW_OTP_SENT: "A new verification OTP has been sent to your email.",
+    VERIFY_EMAIL_FIRST: "Please verify your email first.",
 
     // Password Validation
     PASSWORD_REQUIRED: "Password is required.",
@@ -97,28 +97,47 @@ export const MESSAGES = {
     CATEGORY_REQUIRED: "Expense category is required.",
     INVALID_CATEGORY: "Invalid expense category.",
     EXPENSE_TACKER_API_RUNNING: "Expense tracker api running.",
+    EXPENSE_TITLE_MUST_BE_AT_LEAST_3_CHAR: "Expense title must be at least 3 characters.",
+    EXPENSE_TITLE_CANNOT_EXCEED_100_CHARACTER: "Expense title cannot exceed 100 characters.",
 
     // Common
     INTERNAL_SERVER_ERROR: "Internal server error.",
     SOMETHING_WENT_WRONG: "Something went wrong. Please try again later.",
 
-    SOURCE_ALREADY_EXIST:"Source already exists.",
-    SOURCE_ADDED_SUCCESSFULLY:"Source added successfully",
+    SOURCE_ALREADY_EXIST: "Source already exists.",
+    SOURCE_ADDED_SUCCESSFULLY: "Source added successfully",
     SOURCE_NOT_FOUND: "Source not found",
-    SELECTED_SOURCE_DOES_NOT_EXIST:"Selected source does not exist.",
+    SELECTED_SOURCE_DOES_NOT_EXIST: "Selected source does not exist.",
 
-    ALL_NOTIFICATION_DELETED_SUCCESSFULLY:"All notifications deleted successfully",
-    NOTIFICATION_NOT_FOUND:"Notification not found.",
-    NOTIFICATION_MARKED_AS_READ:"Notification marked as read.",
-    ALL_NOTIFICATION_MARKED_AS_READ:"All notifications marked as read.",
-    NOTIFICATION_DELETED_SUCCESSFULLY:"Notification deleted successfully.",
+    ALL_NOTIFICATION_DELETED_SUCCESSFULLY: "All notifications deleted successfully",
+    NOTIFICATION_NOT_FOUND: "Notification not found.",
+    NOTIFICATION_MARKED_AS_READ: "Notification marked as read.",
+    ALL_NOTIFICATION_MARKED_AS_READ: "All notifications marked as read.",
+    NOTIFICATION_DELETED_SUCCESSFULLY: "Notification deleted successfully.",
 
-    TOO_MANY_REQUEST:"Too many requests. Please try again later.",
-    TOO_MANY_LOGIN_ATTEMPT:"Too many login attempts. Please try again after 15 minute.",
-    TOO_MANY_OTP_REQUESTS:"Too many OTP requests. Please try again later.",
-    YOUR_SESSION_IS_INVALID_OR_EXPIRED:"Your session is invalid or has expired. Please sign in again.",
+    TOO_MANY_REQUEST: "Too many requests. Please try again later.",
+    TOO_MANY_LOGIN_ATTEMPT: "Too many login attempts. Please try again after 15 minute.",
+    TOO_MANY_OTP_REQUESTS: "Too many OTP requests. Please try again later.",
+    YOUR_SESSION_IS_INVALID_OR_EXPIRED: "Your session is invalid or has expired. Please sign in again.",
 
-    PASSWORD_DOES_NOT_MATCH:"Passwords do not match.",
-    CONFIRM_PASSWORD_IS_REQUIRED:"Confirm password is required.",
-    CURRENT_PASSWORD_IS_REQUIRED:"Current password is required."
+    PASSWORD_DOES_NOT_MATCH: "Passwords do not match.",
+    CONFIRM_PASSWORD_IS_REQUIRED: "Confirm password is required.",
+    CURRENT_PASSWORD_IS_REQUIRED: "Current password is required.",
+
+    AMOUNT_MUST_BE_A_VALID_NUMBER: "Amount must be a valid number.",
+    AMOUNT_CANNOT_BE_NEGATIVE: "Amount cannot be negative.",
+    AMOUNT_IS_REQUIRED: "Amount is required.",
+
+    INVALID_DATE: "Please enter a valid date.",
+    EXPENSE_DATE_IS_REQUIRED: "Expense date is required.",
+
+    INCOME_TITLE_REQUIRED: "Income title is required.",
+    INCOME_TITLE_MUST_BE_AT_LEAST_3_CHAR: "Income title must be at least 3 characters.",
+    INCOME_TITLE_CANNOT_EXCEED_100_CHARACTER: "Income title cannot exceed 100 characters.",
+
+    SOURCE_REQUIRED: "Source is required.",
+    SOURCE_MUST_BE_VALID: "Please select a valid source.",
+
+    INCOME_DATE_IS_REQUIRED: "Income date is required.",
+
 };

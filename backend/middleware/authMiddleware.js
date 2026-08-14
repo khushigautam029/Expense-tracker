@@ -1,36 +1,51 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { sendError } from "../utils/responseHandler.js";
 import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
 
 const authMiddleware = asyncHandler(async (req, res, next) => {
-    const token = req.header("Authorization");
-    if (!token) {
-        return res.status(STATUS_CODES.UNAUTHORIZED).json({
-            success: false,
-            message: MESSAGES.ACCESS_DENIED
-        });
+    const authHeader = req.header("Authorization");
+
+    if (!authHeader) {
+        return sendError(
+            res,
+            STATUS_CODES.UNAUTHORIZED,
+            MESSAGES.ACCESS_DENIED
+        );
     }
 
     let decoded;
+
     try {
         decoded = jwt.verify(
-            token.replace(/^Bearer\s+/i, ""),
+            authHeader.replace(/^Bearer\s+/i, ""),
             process.env.JWT_SECRET
         );
-    } catch (error) {
-        return res.status(STATUS_CODES.UNAUTHORIZED).json({
-            success: false,
-            message: MESSAGES.YOUR_SESSION_IS_INVALID_OR_EXPIRED
-        });
+    } catch {
+        return sendError(
+            res,
+            STATUS_CODES.UNAUTHORIZED,
+            MESSAGES.YOUR_SESSION_IS_INVALID_OR_EXPIRED
+        );
     }
 
-    const user = await User.findByPk(decoded.id);
+    const user = await User.findByPk(decoded.id, {
+        attributes: {
+            exclude: [
+                "password",
+                "otp",
+                "otpExpiry"
+            ]
+        }
+    });
+
     if (!user) {
-        return res.status(STATUS_CODES.UNAUTHORIZED).json({
-            success: false,
-            message: MESSAGES.USER_NOT_FOUND
-        });
+        return sendError(
+            res,
+            STATUS_CODES.UNAUTHORIZED,
+            MESSAGES.USER_NOT_FOUND
+        );
     }
 
     req.user = user;

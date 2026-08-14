@@ -202,11 +202,11 @@ const Income = () => {
 
             resetForm();
             setOpenModal(false);
-        } catch (error) {
-            console.log(error);
+        } catch (err) {
+            console.log(err);
+
             errorToast(
-                "Failed",
-                "Unable to add income."
+                err.response?.data?.message || "Unable to add income."
             );
         }
     };
