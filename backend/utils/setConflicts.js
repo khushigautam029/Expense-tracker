@@ -89,6 +89,7 @@ export const MESSAGES = {
     INVALID_INCOME_AMOUNT: "Income amount must be greater than zero.",
     SOURCE_REQUIRED: "Income source is required.",
     DATE_REQUIRED: "Date is required.",
+    INCOME_FETCHED_SUCCESSFULLY:"Income fetched successfully",
 
     // Expense Validation
     EXPENSE_TITLE_REQUIRED: "Expense title is required.",
@@ -139,5 +140,6 @@ export const MESSAGES = {
     SOURCE_MUST_BE_VALID: "Please select a valid source.",
 
     INCOME_DATE_IS_REQUIRED: "Income date is required.",
+    INVALID_CATEGORY:"Category must be one of [Food, Travel, Shopping, Bills, Health, Education, Entertainment, Investment, Others"
 
 };

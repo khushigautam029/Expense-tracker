@@ -374,7 +374,26 @@ const Reports = () => {
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row">
-                    <div className="relative">
+                    {/* Report Month Filter */}
+                    <div
+                        className="
+            flex
+            h-10
+            items-center
+            rounded-lg
+            border
+            border-slate-200
+            dark:border-slate-700
+            bg-white
+            dark:bg-slate-900
+            shadow-sm
+            transition
+            focus-within:border-blue-500
+            focus-within:ring-2
+            focus-within:ring-blue-500/20
+        "
+                    >
+                        {/* Calendar Button */}
                         <button
                             type="button"
                             aria-label="Choose report month"
@@ -385,16 +404,44 @@ const Reports = () => {
                                     monthInputRef.current?.focus();
                                 }
                             }}
-                            className="absolute left-3 top-1/2 z-10 -translate-y-1/2 cursor-pointer text-slate-500 dark:text-slate-400"
+                            className="
+                                flex
+                                h-full
+                                w-10
+                                shrink-0
+                                items-center
+                                justify-center
+                                text-slate-500
+                                dark:text-slate-400
+                                hover:text-blue-600
+                                dark:hover:text-blue-400
+                                transition-colors"
                         >
-                            <CalendarDays size={16} />
+                            <CalendarDays size={17} />
                         </button>
+
+                        {/* Month Input */}
                         <input
                             ref={monthInputRef}
                             type="month"
                             value={reportMonth}
                             onChange={(e) => setReportMonth(e.target.value)}
-                            className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2 pl-10 pr-4 text-slate-700 dark:text-white dark:[color-scheme:dark] dark:[&::-webkit-calendar-picker-indicator]:invert"
+                            className="
+                h-full
+                min-w-0
+                flex-1
+                bg-transparent
+                px-1
+                text-sm
+                text-slate-700
+                dark:text-white
+                outline-none
+                dark:[color-scheme:dark]
+
+                [&::-webkit-calendar-picker-indicator]:opacity-0
+                [&::-webkit-calendar-picker-indicator]:absolute
+                [&::-webkit-calendar-picker-indicator]:pointer-events-none
+            "
                         />
                     </div>
                 </div>

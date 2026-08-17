@@ -410,18 +410,50 @@ const Expenses = () => {
                     </div>
 
                     <div className="flex flex-col gap-3 sm:flex-row">
-                        <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
-                            <Search size={17} className="text-slate-400 dark:text-slate-500" />
+                        {/* Search */}
+                        <div className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 shadow-sm">
+                            <Search
+                                size={17}
+                                className="shrink-0 text-slate-400 dark:text-slate-500"
+                            />
+
                             <input
                                 type="text"
                                 placeholder="Search expenses..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="w-full bg-transparent text-sm text-slate-700 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 sm:w-52"
+                                className="
+                                w-full
+                                bg-transparent
+                                text-sm
+                                text-slate-700
+                                dark:text-white
+                                outline-none
+                                placeholder:text-slate-400
+                                dark:placeholder:text-slate-500
+                                sm:w-52"
                             />
                         </div>
 
-                        <div className="relative">
+                        {/* Month Filter */}
+                        <div
+                            className="
+                            flex
+                            h-10
+                            items-center
+                            rounded-lg
+                            border
+                            border-slate-200
+                            dark:border-slate-700
+                            bg-white
+                            dark:bg-slate-900
+                            shadow-sm
+                            transition
+                            focus-within:border-blue-500
+                            focus-within:ring-2
+                            focus-within:ring-blue-500/20"
+                        >
+                            {/* Calendar Button */}
                             <button
                                 type="button"
                                 aria-label="Choose month"
@@ -432,10 +464,24 @@ const Expenses = () => {
                                         monthInputRef.current?.focus();
                                     }
                                 }}
-                                className="absolute left-3 top-1/2 z-10 -translate-y-1/2 cursor-pointer text-slate-500 dark:text-slate-400"
+                                className="
+                flex
+                h-full
+                w-10
+                shrink-0
+                items-center
+                justify-center
+                text-slate-500
+                dark:text-slate-400
+                hover:text-blue-600
+                dark:hover:text-blue-400
+                transition-colors
+            "
                             >
-                                <CalendarDays size={16} />
+                                <CalendarDays size={17} />
                             </button>
+
+                            {/* Month Input */}
                             <input
                                 ref={monthInputRef}
                                 type="month"
@@ -444,18 +490,53 @@ const Expenses = () => {
                                 value={selectedMonth}
                                 onChange={(e) => {
                                     const month = e.target.value;
-                                    if (!month || (month >= "1950-01" && month <= currentMonth)) {
+
+                                    if (
+                                        !month ||
+                                        (month >= "1950-01" && month <= currentMonth)
+                                    ) {
                                         setSelectedMonth(month);
                                     }
                                 }}
                                 onKeyDown={(e) => e.preventDefault()}
-                                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2 pl-10 pr-3 text-sm text-slate-700 dark:text-white outline-none focus:border-blue-500 dark:[color-scheme:dark] dark:[&::-webkit-calendar-picker-indicator]:invert"
+                                className="
+                h-full
+                min-w-0
+                flex-1
+                bg-transparent
+                px-1
+                text-sm
+                text-slate-700
+                dark:text-white
+                outline-none
+                dark:[color-scheme:dark]
+
+                [&::-webkit-calendar-picker-indicator]:opacity-0
+                [&::-webkit-calendar-picker-indicator]:absolute
+                [&::-webkit-calendar-picker-indicator]:pointer-events-none
+            "
                             />
+
+                            {/* All Button */}
                             {selectedMonth && (
                                 <button
                                     type="button"
                                     onClick={() => setSelectedMonth("")}
-                                    className="ml-2 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                                    className="
+                                    mr-2
+                                    shrink-0
+                                    rounded-md
+                                    px-2
+                                    py-1
+                                    text-xs
+                                    font-medium
+                                    text-blue-600
+                                    hover:bg-blue-50
+                                    hover:text-blue-700
+                                    dark:text-blue-400
+                                    dark:hover:bg-blue-500/10
+                                    dark:hover:text-blue-300
+                                    transition-colors"
                                 >
                                     All
                                 </button>

@@ -22,7 +22,6 @@ export const addSource = asyncHandler(async (req, res) => {
         },
     });
 
-    console.log("5. Search completed");
 
     if (existing) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -31,14 +30,12 @@ export const addSource = asyncHandler(async (req, res) => {
         });
     }
 
-    console.log("6. Creating source...");
 
     const source = await Source.create({
         name,
         userId: req.user.id,
     });
 
-    console.log("7. Source created successfully");
 
     return res.status(STATUS_CODES.OK).json({
         success: true,

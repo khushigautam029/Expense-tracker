@@ -23,6 +23,7 @@ export const expenseSchema = Joi.object({
         }),
 
     category: Joi.string()
+        .trim()
         .valid(
             "Food",
             "Travel",
@@ -36,7 +37,7 @@ export const expenseSchema = Joi.object({
         )
         .required()
         .messages({
-            "any.only": "Category must be one of [Food, Travel, Shopping, Bills, Health, Education, Entertainment, Investment, Others",
+            "any.only": MESSAGES.INVALID_CATEGORY,
             "string.empty": MESSAGES.CATEGORY_REQUIRED,
             "any.required": MESSAGES.CATEGORY_REQUIRED,
         }),

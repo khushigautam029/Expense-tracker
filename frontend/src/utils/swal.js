@@ -12,10 +12,10 @@ const Toast = Swal.mixin({
     },
 });
 // Success Toast
-export const successToast = (title) => {
+export const successToast = (title, text = "") => {
     return Toast.fire({
         icon: "success",
-        title,
+        title: text ? `${title}: ${text}` : title,
     });
 };
 

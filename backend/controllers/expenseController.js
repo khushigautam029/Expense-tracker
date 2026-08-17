@@ -2,8 +2,9 @@ import { Op } from "sequelize";
 import { Expense } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import createNotification from "../utils/createNotifications.js";
-import { sendSuccess } from "../utils/responseHandler.js";
+import { sendError, sendSuccess } from "../utils/responseHandler.js";
 import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
+import { transactionHandler } from "../utils/transactionHandler.js";
 import { expenseSchema } from "../validation/expenseValidation.js";
 
 const getMonthFilter = (month) => {
@@ -15,19 +16,7 @@ const getMonthFilter = (month) => {
 };
 
 export const addExpense = asyncHandler(async (req, res) => {
-    const rawCategory = req.body.category?.trim();
-
-    const category = rawCategory
-        ? rawCategory.charAt(0).toUpperCase() +
-        rawCategory.slice(1).toLowerCase()
-        : rawCategory;
-
-    const data = {
-        ...req.body,
-        category,
-    };
-
-    const { error } = expenseSchema.validate(data);
+    const { error, value } = expenseSchema.validate(req.body);
 
     if (error) {
         return sendError(
@@ -37,7 +26,7 @@ export const addExpense = asyncHandler(async (req, res) => {
         );
     }
 
-    const { title, amount, date, notes } = data;
+    const { title, amount, category, date, notes } = value;
     const userId = req.user.id;
 
     await Expense.create({
@@ -64,44 +53,63 @@ export const addExpense = asyncHandler(async (req, res) => {
 });
 
 export const getAllExpenses = asyncHandler(async (req, res) => {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 5;
-    const search = req.query.search || "";
-    const category = req.query.category || "";
-    const { month } = req.query;
-    const sortBy = req.query.sortBy || "createdAt";
-    const order = req.query.order || "DESC";
+    const userId = req.user.id;
 
-    const offset = (page - 1) * limit;
+    const {
+        page = 1,
+        limit = 5,
+        search = "",
+        category = "",
+        month,
+        sortBy = "createdAt",
+        order = "DESC",
+    } = req.query;
+
+    const currentPage = Math.max(Number(page), 1);
+    const pageLimit = Math.max(Number(limit), 1);
+    const offset = (currentPage - 1) * pageLimit;
+
+    const allowedSortFields = [
+        "id",
+        "title",
+        "amount",
+        "category",
+        "date",
+        "createdAt",
+    ];
+
+    const safeSortBy = allowedSortFields.includes(sortBy)
+        ? sortBy
+        : "createdAt";
+
+    const safeOrder = order.toUpperCase() === "ASC"
+        ? "ASC"
+        : "DESC";
 
     const where = {
-        userId: req.user.id,
+        userId,
         ...getMonthFilter(month),
+        ...(search && {
+            title: {
+                [Op.like]: `%${search}%`,
+            },
+        }),
+        ...(category && { category }),
     };
 
-    if (search) {
-        where.title = {
-            [Op.like]: `%${search}%`,
-        };
-    }
-
-    if (category) {
-        where.category = category;
-    }
-
-    const { count, rows } = await Expense.findAndCountAll({
+    const { count, rows: expenses } = await Expense.findAndCountAll({
         where,
-        order: [[sortBy, order]],
-        limit,
+        order: [[safeSortBy, safeOrder]],
+        limit: pageLimit,
         offset,
     });
 
-    res.status(STATUS_CODES.OK).json({
+    return res.status(STATUS_CODES.OK).json({
         success: true,
         totalExpenses: count,
-        totalPages: Math.ceil(count / limit),
-        currentPage: page,
-        expenses: rows,
+        totalPages: Math.ceil(count / pageLimit),
+        currentPage,
+        expenses,
     });
 });
 
@@ -114,26 +122,25 @@ export const getExpenseById = asyncHandler(async (req, res) => {
     });
 
     if (!expense) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success: false,
-            message: MESSAGES.EXPENSE_NOT_FOUND,
-        });
+        return sendError(
+            res,
+            STATUS_CODES.NOT_FOUND,
+            MESSAGES.EXPENSE_NOT_FOUND
+        );
     }
 
-    res.status(STATUS_CODES.OK).json({
-        success: true,
-        expense,
-    });
+    return sendSuccess(res, STATUS_CODES.OK, "", { expense });
 });
 
 export const updateExpense = asyncHandler(async (req, res) => {
-    const { error } = expenseSchema.validate(req.body);
+    const { error, value } = expenseSchema.validate(req.body);
 
     if (error) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: error.details[0].message,
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            error.details[0].message
+        );
     }
 
     const expense = await Expense.findOne({
@@ -144,54 +151,72 @@ export const updateExpense = asyncHandler(async (req, res) => {
     });
 
     if (!expense) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success: false,
-            message: MESSAGES.EXPENSE_NOT_FOUND,
-        });
+        return sendError(
+            res,
+            STATUS_CODES.NOT_FOUND,
+            MESSAGES.EXPENSE_NOT_FOUND
+        );
     }
 
-    await expense.update(req.body);
+    await transactionHandler(async (transaction) => {
+        await expense.update(value, { transaction });
 
-    await createNotification({
-        userId: req.user.id,
-        title: "Expense Updated",
-        message: `Your expense "${expense.title}" was updated successfully.`,
-        type: "info",
+        await createNotification(
+            {
+                userId: req.user.id,
+                title: "Expense Updated",
+                message: `Your expense "${expense.title}" was updated successfully.`,
+                type: "info",
+            },
+            { transaction }
+        );
     });
 
-    res.status(STATUS_CODES.OK).json({
-        success: true,
-        message: MESSAGES.EXPENSE_UPDATED,
-        expense,
-    });
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.EXPENSE_UPDATED,
+        { expense }
+    );
 });
 
 export const deleteExpense = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+
     const expense = await Expense.findOne({
         where: {
             id: req.params.id,
-            userId: req.user.id,
+            userId,
         },
     });
 
     if (!expense) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success: false,
-            message: MESSAGES.EXPENSE_NOT_FOUND,
-        });
+        return sendError(
+            res,
+            STATUS_CODES.NOT_FOUND,
+            MESSAGES.EXPENSE_NOT_FOUND
+        );
     }
 
-    await expense.destroy();
+    const expenseTitle = expense.title;
 
-    await createNotification({
-        userId: req.user.id,
-        title: "Expense Deleted",
-        message: `Your expense "${expense.title}" was deleted successfully.`,
-        type: "warning",
+    await transactionHandler(async (transaction) => {
+        await expense.destroy({ transaction });
+
+        await createNotification(
+            {
+                userId,
+                title: "Expense Deleted",
+                message: `Your expense "${expenseTitle}" was deleted successfully.`,
+                type: "warning",
+            },
+            { transaction }
+        );
     });
 
-    res.status(STATUS_CODES.OK).json({
-        success: true,
-        message: MESSAGES.EXPENSE_DELETED,
-    });
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.EXPENSE_DELETED
+    );
 });

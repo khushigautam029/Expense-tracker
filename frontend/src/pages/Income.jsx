@@ -446,8 +446,17 @@ const Income = () => {
                                         setSelectedMonth(month);
                                     }
                                 }}
-                                className="ml-2 bg-transparent outline-none text-slate-700 dark:text-white dark:[color-scheme:dark] dark:[&::-webkit-calendar-picker-indicator]:invert"
-                            />
+                        className="
+                        ml-2
+                        bg-transparent
+                        outline-none
+                        text-slate-700
+                        dark:text-white
+                        dark:[color-scheme:dark]
+                        [&::-webkit-calendar-picker-indicator]:opacity-0
+                        [&::-webkit-calendar-picker-indicator]:absolute
+                        [&::-webkit-calendar-picker-indicator]:pointer-events-none"
+                        />
                             {selectedMonth && (
                                 <button
                                     type="button"
