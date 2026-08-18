@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import {
     deleteAllNotifications as deleteAllNotificationsAPI,
@@ -12,62 +12,55 @@ import {
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
-
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
 
     // Fetch all notifications
-    const fetchNotifications = async () => {
+    // 1. Update fetchNotifications to recalculate unread count directly
+    const fetchNotifications = useCallback(async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
         try {
             setLoading(true);
-
             const response = await getNotifications();
 
             if (response.success) {
-                setNotifications(response.notifications || []);
+                const list = response.notifications || [];
+                setNotifications(list);
+                const activeUnread = list.filter((n) => !n.isRead).length;
+                setUnreadCount(activeUnread);
             }
-
         } catch (error) {
             if (error.response?.status === 401) return;
-
-            console.error(
-                "Failed to fetch notifications:",
-                error
-            );
+            console.error("Failed to fetch notifications:", error);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    // Fetch unread count
-    const fetchUnreadCount = async () => {
+    // 2. Keep fetchUnreadCount synced with API responses
+    const fetchUnreadCount = useCallback(async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
         try {
-
             const response = await getUnreadCount();
-
             if (response.success) {
-                setUnreadCount(response.unreadCount || 0);
+                setUnreadCount(response.unreadCount ?? 0);
             }
-
         } catch (error) {
             if (error.response?.status === 401) return;
-
-            console.error(
-                "Failed to fetch unread count:",
-                error
-            );
+            console.error("Failed to fetch unread count:", error);
         }
-    };
+    }, []);
 
     // Mark one notification as read
     const markAsRead = async (id) => {
         try {
-
             const response = await markNotificationAsRead(id);
-
             if (response.success) {
-
                 setNotifications((prev) =>
                     prev.map((notification) =>
                         notification.id === id
@@ -78,21 +71,16 @@ export const NotificationProvider = ({ children }) => {
                             : notification
                     )
                 );
-
                 setUnreadCount((prev) =>
                     Math.max(prev - 1, 0)
                 );
             }
-
             return response;
-
         } catch (error) {
-
             console.error(
                 "Failed to mark notification as read:",
                 error
             );
-
             throw error;
         }
     };
@@ -100,31 +88,23 @@ export const NotificationProvider = ({ children }) => {
     // Mark all notifications as read
     const markAllAsRead = async () => {
         try {
-
-            const response =
-                await markAllNotificationsAsRead();
-
+            const response = await markAllNotificationsAsRead();
             if (response.success) {
-
                 setNotifications((prev) =>
                     prev.map((notification) => ({
                         ...notification,
                         isRead: true
                     }))
                 );
-
                 setUnreadCount(0);
             }
 
             return response;
-
         } catch (error) {
-
             console.error(
                 "Failed to mark all notifications as read:",
                 error
             );
-
             throw error;
         }
     };
@@ -132,12 +112,9 @@ export const NotificationProvider = ({ children }) => {
     // Delete one notification
     const removeNotification = async (id) => {
         try {
-
-            const response =
-                await deleteNotificationAPI(id);
+            const response = await deleteNotificationAPI(id);
 
             if (response.success) {
-
                 setNotifications((prev) =>
                     prev.filter(
                         (notification) =>
@@ -145,32 +122,22 @@ export const NotificationProvider = ({ children }) => {
                     )
                 );
 
-                // If deleted notification was unread
-                const deletedNotification =
-                    notifications.find(
-                        (notification) =>
-                            notification.id === id
-                    );
+                // Check if deleted notification was unread
+                const deletedNotification = notifications.find(
+                    (notification) => notification.id === id
+                );
 
-                if (
-                    deletedNotification &&
-                    !deletedNotification.isRead
-                ) {
-                    setUnreadCount((prev) =>
-                        Math.max(prev - 1, 0)
-                    );
+                if (deletedNotification && !deletedNotification.isRead) {
+                    setUnreadCount((prev) => Math.max(prev - 1, 0));
                 }
             }
 
             return response;
-
         } catch (error) {
-
             console.error(
                 "Failed to delete notification:",
                 error
             );
-
             throw error;
         }
     };
@@ -178,9 +145,7 @@ export const NotificationProvider = ({ children }) => {
     // Delete all notifications
     const removeAllNotifications = async () => {
         try {
-
-            const response =
-                await deleteAllNotificationsAPI();
+            const response = await deleteAllNotificationsAPI();
 
             if (response.success) {
                 setNotifications([]);
@@ -188,29 +153,31 @@ export const NotificationProvider = ({ children }) => {
             }
 
             return response;
-
         } catch (error) {
-
             console.error(
                 "Failed to delete all notifications:",
                 error
             );
-
             throw error;
         }
     };
 
-    // Initial fetch
+    // Initial fetch & controlled background polling (Single interval source)
     useEffect(() => {
-
         const token = localStorage.getItem("token");
-
         if (!token) return;
 
+        // Run immediately on mount
         fetchNotifications();
         fetchUnreadCount();
 
-    }, []);
+        // Single application-wide background interval (every 30s)
+        const interval = setInterval(() => {
+            fetchUnreadCount();
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, [fetchNotifications, fetchUnreadCount]);
 
     return (
         <NotificationContext.Provider
@@ -235,7 +202,6 @@ export const NotificationProvider = ({ children }) => {
 };
 
 export const useNotifications = () => {
-
     const context = useContext(NotificationContext);
 
     if (!context) {

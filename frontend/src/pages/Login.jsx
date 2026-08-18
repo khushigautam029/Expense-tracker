@@ -81,7 +81,6 @@ const Login = () => {
             closeAlert();
 
             await successToast(
-                "Login Successful",
                 response.data.message
             );
             navigate("/dashboard", {

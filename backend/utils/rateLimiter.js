@@ -3,7 +3,7 @@ import { MESSAGES } from "./setConstants.js";
 //General API limiter
 export const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 50,
+    max: 100,
     message: {
         success: false,
         message: MESSAGES.TOO_MANY_REQUEST
@@ -15,8 +15,8 @@ export const generalLimiter = rateLimit({
 
 //login limiter
 const loginLimiter = rateLimit({
-    windowMs:  5* 60 * 1000, // 5 minute
-    max: 20,              // only 10 requests per 5 minute
+    windowMs:  15* 60 * 1000, // 15 minute
+    max: 20,              // only 20 requests per 15 minute
     message: {
         success: false,
         message: MESSAGES.TOO_MANY_LOGIN_ATTEMPT
