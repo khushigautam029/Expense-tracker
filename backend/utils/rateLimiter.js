@@ -30,7 +30,7 @@ export default loginLimiter;
 // OTP limiter
 export const otpLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
-    max: 5,
+    max: 50,
 
     message: {
         success: false,
