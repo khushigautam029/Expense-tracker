@@ -4,7 +4,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import generateToken from "../utils/generateToken.js";
 import { sendOTPEmail } from "../utils/mailService.js";
 import { sendError, sendSuccess } from "../utils/responseHandler.js";
-import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
+import { MESSAGES, STATUS_CODES } from "../utils/setConstants.js";
 import { transactionHandler } from "../utils/transactionHandler.js";
 import { changePasswordSchema, loginSchema, registerSchema, resendOTPSchema, verifyOTPSchema } from "../validation/authValidation.js";
 

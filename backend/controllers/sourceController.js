@@ -1,7 +1,7 @@
 import { Source } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { sendError, sendSuccess } from "../utils/responseHandler.js";
-import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
+import { MESSAGES, STATUS_CODES } from "../utils/setConstants.js";
 
 export const getSources = asyncHandler(async (req, res) => {
     const sources = await Source.findAll({

@@ -2,7 +2,7 @@ import { col, fn, Op } from "sequelize";
 import { Expense, Income } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { sendSuccess } from "../utils/responseHandler.js";
-import { STATUS_CODES } from "../utils/setConflicts.js";
+import { STATUS_CODES } from "../utils/setConstants.js";
 
 const getMonthFilter = (month) => {
     if (!month) return {};

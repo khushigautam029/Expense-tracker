@@ -1,5 +1,5 @@
 import rateLimit from "express-rate-limit";
-import { MESSAGES } from "./setConflicts.js";
+import { MESSAGES } from "./setConstants.js";
 //General API limiter
 export const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,

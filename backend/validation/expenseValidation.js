@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { MESSAGES } from "../utils/setConflicts.js";
+import { MESSAGES } from "../utils/setConstants.js";
 
 export const expenseSchema = Joi.object({
     title: Joi.string()

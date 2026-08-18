@@ -3,7 +3,7 @@ import { Income, Source } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import createNotification from "../utils/createNotifications.js";
 import { sendError, sendSuccess } from "../utils/responseHandler.js";
-import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
+import { MESSAGES, STATUS_CODES } from "../utils/setConstants.js";
 import { transactionHandler } from "../utils/transactionHandler.js";
 import { incomeSchema } from "../validation/incomeValidation.js";
 

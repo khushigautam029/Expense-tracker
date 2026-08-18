@@ -1,7 +1,7 @@
 import { Notification } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { sendError, sendSuccess } from "../utils/responseHandler.js";
-import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
+import { MESSAGES, STATUS_CODES } from "../utils/setConstants.js";
 
 export const getNotifications = asyncHandler(async (req, res) => {
     const notifications = await Notification.findAll({

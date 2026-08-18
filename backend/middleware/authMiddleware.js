@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { sendError } from "../utils/responseHandler.js";
-import { MESSAGES, STATUS_CODES } from "../utils/setConflicts.js";
+import { MESSAGES, STATUS_CODES } from "../utils/setConstants.js";
 
 const authMiddleware = asyncHandler(async (req, res, next) => {
     const authHeader = req.header("Authorization");
