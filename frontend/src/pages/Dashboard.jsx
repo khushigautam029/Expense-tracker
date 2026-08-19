@@ -1,4 +1,5 @@
 import {
+    AlertTriangle,
     ArrowDownRight,
     ArrowUpRight,
     CalendarDays,
@@ -83,7 +84,14 @@ const Dashboard = () => {
             balance: 0,
             incomeCount: 0,
             expenseCount: 0,
+
+            financialWarning: {
+                show: false,
+                message: null,
+                difference: 0,
+            },
         },
+
         recentIncome: [],
         recentExpense: [],
         expenseByCategory: [],
@@ -212,7 +220,7 @@ const Dashboard = () => {
                         [&::-webkit-calendar-picker-indicator]:opacity-0
                         [&::-webkit-calendar-picker-indicator]:absolute
                         [&::-webkit-calendar-picker-indicator]:pointer-events-none"
-                        />
+                    />
                 </div>
 
             </div>
@@ -252,6 +260,39 @@ const Dashboard = () => {
                     iconClass="bg-purple-50 text-purple-600"
                 />
             </div>
+
+
+            {/* Financial Warning */}
+            {dashboard.summary.financialWarning?.show && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-800 dark:bg-amber-900/20">
+
+                    <div className="flex items-start gap-3">
+
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
+                            <AlertTriangle size={20} />
+                        </div>
+
+                        <div>
+                            <h3 className="font-semibold text-amber-800 dark:text-amber-300">
+                                Your spending is higher than your income
+                            </h3>
+
+                            {/* <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
+                                {dashboard.summary.financialWarning.message}
+                            </p> */}
+
+                            <p className="mt-1 text-sm font-medium text-amber-800 dark:text-amber-300">
+                                You have spent ₹
+                                {dashboard.summary.financialWarning.difference.toLocaleString("en-IN")}
+                                {" "}more than you earned this month.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
+
 
             {/* Charts */}
             <div className="w-full px-6 py-4">

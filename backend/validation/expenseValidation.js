@@ -23,25 +23,26 @@ export const expenseSchema = Joi.object({
         }),
 
     category: Joi.string()
-        .trim()
-        .valid(
-            "Food",
-            "Travel",
-            "Shopping",
-            "Bills",
-            "Health",
-            "Education",
-            "Entertainment",
-            "Investment",
-            "Others"
-        )
-        .required()
-        .messages({
-            "any.only": MESSAGES.INVALID_CATEGORY,
-            "string.empty": MESSAGES.CATEGORY_REQUIRED,
-            "any.required": MESSAGES.CATEGORY_REQUIRED,
-        }),
-
+    .trim()
+    .insensitive()
+    .valid(
+        "Food",
+        "Travel",
+        "Shopping",
+        "Bills",
+        "Health",
+        "Education",
+        "Entertainment",
+        "Investment",
+        "Others"
+    )
+    .required()
+    .messages({
+        "any.only": MESSAGES.INVALID_CATEGORY,
+        "string.empty": MESSAGES.CATEGORY_REQUIRED,
+        "any.required": MESSAGES.CATEGORY_REQUIRED,
+    }),
+    
     date: Joi.date()
         .required()
         .messages({
