@@ -14,16 +14,16 @@ const getMonthFilter = (month) => {
     const lastDay = new Date(year, monthNumber, 0).getDate();
     return {
         date: {
-            [Op.between]: [`${month}-01`, `${month}-${String(lastDay).padStart(2, "0")}`]
-        }
+            [Op.between]: [
+                `${month}-01`,
+                `${month}-${String(lastDay).padStart(2, "0")}`,
+            ],
+        },
     };
 };
 
 export const addIncome = asyncHandler(async (req, res) => {
-    const userId = req.user.id;
-
     const { error, value } = incomeSchema.validate(req.body);
-
     if (error) {
         return sendError(
             res,
@@ -32,8 +32,8 @@ export const addIncome = asyncHandler(async (req, res) => {
         );
     }
 
-    const { title, amount, sourceId, date, notes } = value;
-
+    const { title, amount, sourceId, date } = value;
+    const userId = req.user.id;
     const source = await Source.findByPk(sourceId);
 
     if (!source) {
@@ -45,7 +45,6 @@ export const addIncome = asyncHandler(async (req, res) => {
     }
 
     let income;
-
     await transactionHandler(async (transaction) => {
         income = await Income.create(
             {
@@ -57,7 +56,6 @@ export const addIncome = asyncHandler(async (req, res) => {
             },
             { transaction }
         );
-
         await createNotification(
             {
                 userId,
@@ -89,8 +87,8 @@ export const getAllIncome = asyncHandler(async (req, res) => {
         order = "DESC",
     } = req.query;
 
-    const currentPage = Math.max(Number(page), 1);
-    const pageLimit = Math.max(Number(limit), 1);
+    const currentPage = Math.max(Number(page) || 1, 1);
+    const pageLimit = Math.max(Number(limit) || 5, 1);
     const offset = (currentPage - 1) * pageLimit;
 
     const allowedSortFields = [
@@ -113,22 +111,20 @@ export const getAllIncome = asyncHandler(async (req, res) => {
     const where = {
         userId,
         ...getMonthFilter(month),
-        ...(search && {
-            title: {
-                [Op.like]: `%${search}%`,
-            },
-        }),
     };
+    if (search.trim()) {
+        where.title = {
+            [Op.like]: `%${search.trim()}%`,
+        };
+    }
 
     const { count, rows: incomes } = await Income.findAndCountAll({
         where,
-        include: [
-            {
-                model: Source,
-                as: "source",
-                attributes: ["id", "name"],
-            },
-        ],
+        include: {
+            model: Source,
+            as: "source",
+            attributes: ["id", "name"],
+        },
         order: [[safeSortBy, safeOrder]],
         limit: pageLimit,
         offset,
@@ -137,7 +133,7 @@ export const getAllIncome = asyncHandler(async (req, res) => {
     return sendSuccess(
         res,
         STATUS_CODES.OK,
-        "",
+        MESSAGES.INCOME_FETCHED_SUCCESSFULLY,
         {
             totalIncome: count,
             totalPages: Math.ceil(count / pageLimit),
@@ -179,7 +175,6 @@ export const getIncomeById = asyncHandler(async (req, res) => {
 export const updateIncome = asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const incomeId = req.params.id;
-
     const payload = {
         ...req.body,
         amount:
@@ -193,15 +188,16 @@ export const updateIncome = asyncHandler(async (req, res) => {
     };
 
     // Validate request body
-    const { error } = incomeSchema.validate(payload);
-
+    const { error , value} = incomeSchema.validate(payload);
     if (error) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-            success: false,
-            message: error.details[0].message,
-        });
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            error.details[0].message
+        );
     }
 
+    const { title, amount, sourceId, date} = value;
     // Find income belonging to logged-in user
     const income = await Income.findOne({
         where: {
@@ -209,46 +205,51 @@ export const updateIncome = asyncHandler(async (req, res) => {
             userId,
         },
     });
-
     if (!income) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success: false,
-            message: MESSAGES.INCOME_NOT_FOUND,
-        });
+        return sendError(
+            res,
+            STATUS_CODES.NOT_FOUND,
+            MESSAGES.INCOME_NOT_FOUND
+        );
     }
 
     // Verify source exists
-    const source = await Source.findByPk(payload.sourceId);
-
+    const source = await Source.findByPk(sourceId);
     if (!source) {
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            success: false,
-            message: MESSAGES.SOURCE_NOT_FOUND,
-        });
+        return sendError(
+            res,
+            STATUS_CODES.NOT_FOUND,
+            MESSAGES.SOURCE_NOT_FOUND
+        );
     }
 
-    // Update income
-    await income.update({
-        title: payload.title,
-        amount: payload.amount,
-        sourceId: payload.sourceId,
-        date: payload.date,
-        notes: payload.notes,
+    await transactionHandler(async (transaction) => {
+        await income.update(
+            {
+                title,
+                amount,
+                sourceId,
+                date,
+            },
+            { transaction }
+        );
+        await createNotification(
+            {
+                userId,
+                title: "Income Updated",
+                message: `Your income "${title}" was updated successfully.`,
+                type: "info",
+            },
+            { transaction }
+        );
     });
 
-    // Create notification
-    await createNotification({
-        userId,
-        title: "Income Updated",
-        message: `Your income "${income.title}" was updated successfully.`,
-        type: "info",
-    });
-
-    return res.status(STATUS_CODES.OK).json({
-        success: true,
-        message: MESSAGES.INCOME_UPDATED,
-        income,
-    });
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.INCOME_UPDATED,
+        { income }
+    );
 });
 
 export const deleteIncome = asyncHandler(async (req, res) => {
@@ -271,14 +272,17 @@ export const deleteIncome = asyncHandler(async (req, res) => {
     }
 
     const incomeTitle = income.title;
-
-    await income.destroy();
-
-    await createNotification({
-        userId,
-        title: "Income Deleted",
-        message: `Your income "${incomeTitle}" was deleted successfully.`,
-        type: "warning",
+    await transactionHandler(async (transaction) => {
+        await income.destroy({ transaction });
+        await createNotification(
+            {
+                userId,
+                title: "Income Deleted",
+                message: `Your income "${incomeTitle}" was deleted successfully.`,
+                type: "warning",
+            },
+            { transaction }
+        );
     });
 
     return sendSuccess(

@@ -138,6 +138,7 @@ export const MESSAGES = {
 
     SOURCE_REQUIRED: "Source is required.",
     SOURCE_MUST_BE_VALID: "Please select a valid source.",
+    SOURCES_FETCHED :"Sources fetched successfully.",
 
     INCOME_DATE_IS_REQUIRED: "Income date is required.",
     INVALID_CATEGORY:"Category must be one of [Food, Travel, Shopping, Bills, Health, Education, Entertainment, Investment, Others"

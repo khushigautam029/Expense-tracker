@@ -12,12 +12,18 @@ const getMonthFilter = (month) => {
     const year = Number(month.slice(0, 4));
     const monthNumber = Number(month.slice(5, 7));
     const lastDay = new Date(year, monthNumber, 0).getDate();
-    return { date: { [Op.between]: [`${month}-01`, `${month}-${String(lastDay).padStart(2, "0")}`] } };
+    return {
+        date: {
+            [Op.between]: [
+                `${month}-01`,
+                `${month}-${String(lastDay).padStart(2, "0")}`,
+            ],
+        },
+    };
 };
 
 export const addExpense = asyncHandler(async (req, res) => {
     const { error, value } = expenseSchema.validate(req.body);
-
     if (error) {
         return sendError(
             res,
@@ -29,22 +35,28 @@ export const addExpense = asyncHandler(async (req, res) => {
     const { title, amount, category, date, notes } = value;
     const userId = req.user.id;
 
-    await Expense.create({
-        title,
-        amount,
-        category,
-        date,
-        notes,
-        userId,
+    await transactionHandler(async (transaction) => {
+        await Expense.create(
+            {
+                title,
+                amount,
+                category,
+                date,
+                notes,
+                userId,
+            },
+            { transaction }
+        );
+        await createNotification(
+            {
+                userId,
+                title: "Expense Added",
+                message: `You added an expense of ₹${amount} for ${category}.`,
+                type: "expense",
+            },
+            { transaction }
+        );
     });
-
-    await createNotification({
-        userId,
-        title: "Expense Added",
-        message: `You added an expense of ₹${amount} for ${category}.`,
-        type: "expense",
-    });
-
     return sendSuccess(
         res,
         STATUS_CODES.CREATED,
@@ -65,8 +77,8 @@ export const getAllExpenses = asyncHandler(async (req, res) => {
         order = "DESC",
     } = req.query;
 
-    const currentPage = Math.max(Number(page), 1);
-    const pageLimit = Math.max(Number(limit), 1);
+    const currentPage = Math.max(Number(page) || 1, 1);
+    const pageLimit = Math.max(Number(limit) || 5, 1);
     const offset = (currentPage - 1) * pageLimit;
 
     const allowedSortFields = [
@@ -89,13 +101,16 @@ export const getAllExpenses = asyncHandler(async (req, res) => {
     const where = {
         userId,
         ...getMonthFilter(month),
-        ...(search && {
-            title: {
-                [Op.like]: `%${search}%`,
-            },
-        }),
-        ...(category && { category }),
     };
+    if (search.trim()) {
+        where.title = {
+            [Op.like]: `%${search.trim()}%`,
+        };
+    }
+
+    if (category.trim()) {
+        where.category = category.trim();
+    }
 
     const { count, rows: expenses } = await Expense.findAndCountAll({
         where,
@@ -104,13 +119,17 @@ export const getAllExpenses = asyncHandler(async (req, res) => {
         offset,
     });
 
-    return res.status(STATUS_CODES.OK).json({
-        success: true,
-        totalExpenses: count,
-        totalPages: Math.ceil(count / pageLimit),
-        currentPage,
-        expenses,
-    });
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.EXPENSE_FETCHED,
+        {
+            totalExpenses: count,
+            totalPages: Math.ceil(count / pageLimit),
+            currentPage,
+            expenses,
+        }
+    );
 });
 
 export const getExpenseById = asyncHandler(async (req, res) => {
@@ -129,12 +148,17 @@ export const getExpenseById = asyncHandler(async (req, res) => {
         );
     }
 
-    return sendSuccess(res, STATUS_CODES.OK, "", { expense });
+    return sendSuccess(
+        res,
+        STATUS_CODES.OK,
+        MESSAGES.EXPENSE_FETCHED,
+        { expense }
+    );
 });
 
 export const updateExpense = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
     const { error, value } = expenseSchema.validate(req.body);
-
     if (error) {
         return sendError(
             res,
@@ -146,7 +170,7 @@ export const updateExpense = asyncHandler(async (req, res) => {
     const expense = await Expense.findOne({
         where: {
             id: req.params.id,
-            userId: req.user.id,
+            userId,
         },
     });
 
@@ -160,7 +184,6 @@ export const updateExpense = asyncHandler(async (req, res) => {
 
     await transactionHandler(async (transaction) => {
         await expense.update(value, { transaction });
-
         await createNotification(
             {
                 userId: req.user.id,
@@ -182,7 +205,6 @@ export const updateExpense = asyncHandler(async (req, res) => {
 
 export const deleteExpense = asyncHandler(async (req, res) => {
     const userId = req.user.id;
-
     const expense = await Expense.findOne({
         where: {
             id: req.params.id,
@@ -199,10 +221,8 @@ export const deleteExpense = asyncHandler(async (req, res) => {
     }
 
     const expenseTitle = expense.title;
-
     await transactionHandler(async (transaction) => {
         await expense.destroy({ transaction });
-
         await createNotification(
             {
                 userId,
@@ -213,7 +233,6 @@ export const deleteExpense = asyncHandler(async (req, res) => {
             { transaction }
         );
     });
-
     return sendSuccess(
         res,
         STATUS_CODES.OK,

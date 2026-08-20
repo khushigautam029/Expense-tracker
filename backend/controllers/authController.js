@@ -1,15 +1,19 @@
-import bcrypt from "bcryptjs";
 import { User } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import {
+    generateOTP,
+    generateOTPExpiry
+} from "../utils/generateOTP.js";
 import generateToken from "../utils/generateToken.js";
 import { sendOTPEmail } from "../utils/mailService.js";
+import { comparePassword, hashPassword } from "../utils/passwordUtils.js";
 import { sendError, sendSuccess } from "../utils/responseHandler.js";
 import { MESSAGES, STATUS_CODES } from "../utils/setConstants.js";
 import { transactionHandler } from "../utils/transactionHandler.js";
 import { changePasswordSchema, loginSchema, registerSchema, resendOTPSchema, verifyOTPSchema } from "../validation/authValidation.js";
 
 export const register = asyncHandler(async (req, res) => {
-    const { error } = registerSchema.validate(req.body);
+    const { error, value } = registerSchema.validate(req.body);
 
     if (error) {
         return sendError(
@@ -18,10 +22,11 @@ export const register = asyncHandler(async (req, res) => {
             error.details[0].message
         );
     }
-    const { name, email, password } = req.body;
+    const { name, email, password } = value;
     let existingUser = await User.findOne({
         where: { email },
     });
+
     if (existingUser?.isVerified) {
         return sendError(
             res,
@@ -29,21 +34,15 @@ export const register = asyncHandler(async (req, res) => {
             MESSAGES.USER_ALREADY_EXISTS
         );
     }
-    const otp = Math.floor(
-        100000 + Math.random() * 900000
-    ).toString();
-    const otpExpiry = new Date(
-        Date.now() + 10 * 60 * 1000
-    );
-    if (existingUser) {
-        await existingUser.update({
-            otp,
-            otpExpiry,
-        });
-    } else {
-        const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = generateOTP();
+    const otpExpiry = generateOTPExpiry();
 
-        existingUser = await User.create({
+    let registeredUser;
+    if (existingUser) {
+        registeredUser = await User.update({ otp, otpExpiry, });
+    } else {
+        const hashedPassword = await hashPassword(password);
+        registeredUser = await User.create({
             name,
             email,
             password: hashedPassword,
@@ -61,12 +60,12 @@ export const register = asyncHandler(async (req, res) => {
         res,
         STATUS_CODES.CREATED,
         MESSAGES.REGISTRATION_SUCCESSFUL_VERIFY_EMAIL,
-        { email: existingUser.email }
+        { email: registeredUser.email }
     );
 });
 
 export const login = asyncHandler(async (req, res) => {
-    const { error } = loginSchema.validate(req.body);
+    const { error, value } = loginSchema.validate(req.body);
     if (error) {
         return sendError(
             res,
@@ -74,9 +73,9 @@ export const login = asyncHandler(async (req, res) => {
             error.details[0].message
         );
     }
-    const { email, password } = req.body;
+    const { email, password } = value;
     const user = await User.findOne({
-        where: { email }
+        where: { email },
     });
     if (!user) {
         return sendError(
@@ -92,10 +91,8 @@ export const login = asyncHandler(async (req, res) => {
             MESSAGES.VERIFY_EMAIL_FIRST
         );
     }
-    const isPasswordValid = await bcrypt.compare(
-        password,
-        user.password
-    );
+    const isPasswordValid = await comparePassword(password, user.password);
+
     if (!isPasswordValid) {
         return sendError(
             res,
@@ -176,7 +173,7 @@ export const getAllUsers = asyncHandler(async (req, res) => {
 });
 
 export const verifyOTP = asyncHandler(async (req, res) => {
-    const { error } = verifyOTPSchema.validate(req.body);
+    const { error, value } = verifyOTPSchema.validate(req.body);
 
     if (error) {
         return sendError(
@@ -186,7 +183,7 @@ export const verifyOTP = asyncHandler(async (req, res) => {
         );
     }
 
-    const { email, otp } = req.body;
+    const { email, otp } = value;
 
     const user = await User.findOne({
         where: { email }
@@ -216,7 +213,10 @@ export const verifyOTP = asyncHandler(async (req, res) => {
         );
     }
 
-    if (!user.otpExpiry || new Date() > new Date(user.otpExpiry)) {
+    const isOTPExpired =
+        !user.otpExpiry || new Date() > new Date(user.otpExpiry);
+
+    if (isOTPExpired) {
         return sendError(
             res,
             STATUS_CODES.BAD_REQUEST,
@@ -230,12 +230,14 @@ export const verifyOTP = asyncHandler(async (req, res) => {
         otpExpiry: null
     });
 
+    const token = generateToken(user.id);
+
     return sendSuccess(
         res,
         STATUS_CODES.OK,
         MESSAGES.EMAIL_VERIFIED_SUCCESSFULLY,
         {
-            token: generateToken(user.id),
+            token,
             user: {
                 id: user.id,
                 name: user.name,
@@ -246,7 +248,7 @@ export const verifyOTP = asyncHandler(async (req, res) => {
 });
 
 export const resendOTP = asyncHandler(async (req, res) => {
-    const { error } = resendOTPSchema.validate(req.body);
+    const { error, value } = resendOTPSchema.validate(req.body);
 
     if (error) {
         return sendError(
@@ -256,7 +258,7 @@ export const resendOTP = asyncHandler(async (req, res) => {
         );
     }
 
-    const { email } = req.body;
+    const { email } = value;
 
     const user = await User.findOne({
         where: { email }
@@ -278,20 +280,17 @@ export const resendOTP = asyncHandler(async (req, res) => {
         );
     }
 
-    const otp = Math.floor(
-        100000 + Math.random() * 900000
-    ).toString();
-
-    const otpExpiry = new Date(
-        Date.now() + 10 * 60 * 1000
-    );
+    const otp = generateOTP();
+    const otpExpiry = generateOTPExpiry();
 
     await user.update({
         otp,
         otpExpiry
     });
 
-    sendOTPEmail(email, otp);
+    sendOTPEmail(email, otp).catch((error) => {
+        console.error("OTP Email Error:", error);
+    });
 
     return sendSuccess(
         res,
@@ -319,12 +318,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
             MESSAGES.USER_NOT_FOUND
         );
     }
-    await transactionHandler(async (transaction) => {
-        await user.update(
-            { name },
-            { transaction }
-        );
-    });
+    await user.update({ name });
 
     return sendSuccess(
         res,
@@ -340,9 +334,8 @@ export const updateProfile = asyncHandler(async (req, res) => {
     );
 });
 
-
 export const changePassword = asyncHandler(async (req, res) => {
-    const { error } = changePasswordSchema.validate(req.body);
+    const { error, value } = changePasswordSchema.validate(req.body);
 
     if (error) {
         return sendError(
@@ -352,7 +345,7 @@ export const changePassword = asyncHandler(async (req, res) => {
         );
     }
 
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword } = value;
 
     const user = await User.findByPk(req.user.id);
 
@@ -364,7 +357,7 @@ export const changePassword = asyncHandler(async (req, res) => {
         );
     }
 
-    const isPasswordCorrect = await bcrypt.compare(
+    const isPasswordCorrect = await comparePassword(
         currentPassword,
         user.password
     );
@@ -377,13 +370,10 @@ export const changePassword = asyncHandler(async (req, res) => {
         );
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await hashPassword(newPassword);
 
-    await transactionHandler(async (transaction) => {
-        await user.update(
-            { password: hashedPassword },
-            { transaction }
-        );
+    await user.update({
+        password: hashedPassword,
     });
 
     return sendSuccess(

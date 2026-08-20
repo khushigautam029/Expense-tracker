@@ -17,13 +17,24 @@ export const getSources = asyncHandler(async (req, res) => {
 });
 
 export const addSource = asyncHandler(async (req, res) => {
-    const { name } = req.body;
+    const { error, value } = sourceSchema.validate(req.body);
+    if (error) {
+        return sendError(
+            res,
+            STATUS_CODES.BAD_REQUEST,
+            error.details[0].message
+        );
+    }
 
-    const existing = await Source.findOne({
-        where: { name },
+    const { name } = value;
+    const existingSource = await Source.findOne({
+        where: {
+            name: {
+                [Op.like]: name,
+            },
+        },
     });
-
-    if (existing) {
+    if (existingSource) {
         return sendError(
             res,
             STATUS_CODES.BAD_REQUEST,
@@ -34,7 +45,6 @@ export const addSource = asyncHandler(async (req, res) => {
     const source = await Source.create({
         name,
     });
-
     return sendSuccess(
         res,
         STATUS_CODES.CREATED,

@@ -92,9 +92,8 @@ export const getDashboard = asyncHandler(async (req, res) => {
     ]);
     const income = Number(totalIncome || 0);
     const expense = Number(totalExpense || 0);
-
+    const balance = income - expense;
     const isOverspending = expense > income;
-    const overspendingAmount = expense - income;
 
     return sendSuccess(
         res,
@@ -104,21 +103,19 @@ export const getDashboard = asyncHandler(async (req, res) => {
             summary: {
                 totalIncome: income,
                 totalExpense: expense,
-                balance: income - expense,
+                balance,
                 incomeCount,
                 expenseCount,
 
-                financialWarning: isOverspending
-                    ? {
-                        show: true,
-                        message: "Your spending is higher than your income this month.",
-                        difference: overspendingAmount,
-                    }
-                    : {
-                        show: false,
-                        message: null,
-                        difference: 0,
-                    },
+                financialWarning: {
+                    show: isOverspending,
+                    message: isOverspending
+                        ? "Your spending is higher than your income this month."
+                        : null,
+                    difference: isOverspending
+                        ? expense - income
+                        : 0,
+                },
             },
 
             recentIncome,
