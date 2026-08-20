@@ -4,23 +4,25 @@ import { sendError, sendSuccess } from "../utils/responseHandler.js";
 import { MESSAGES, STATUS_CODES } from "../utils/setConstants.js";
 
 export const getNotifications = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
     const notifications = await Notification.findAll({
-        where: { userId: req.user.id },
+        where: { userId },
         order: [["createdAt", "DESC"]],
     });
 
     return sendSuccess(
         res,
         STATUS_CODES.OK,
-        null,
+        MESSAGES.NOTIFICATION_FETCHED,
         { notifications }
     );
 });
 
 export const getUnreadCount = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
     const unreadCount = await Notification.count({
         where: {
-            userId: req.user.id,
+            userId,
             isRead: false,
         },
     });
@@ -28,16 +30,18 @@ export const getUnreadCount = asyncHandler(async (req, res) => {
     return sendSuccess(
         res,
         STATUS_CODES.OK,
-        null,
+        MESSAGES.UNREAD_NOTIFICATIONS_COUNT_FETCHED,
         { unreadCount }
     );
 });
 
 export const markAsRead = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const notificationId = req.params.id;
     const notification = await Notification.findOne({
         where: {
-            id: req.params.id,
-            userId: req.user.id,
+            id: notificationId,
+            userId,
         },
     });
 
@@ -50,7 +54,6 @@ export const markAsRead = asyncHandler(async (req, res) => {
     }
 
     await notification.update({ isRead: true });
-
     return sendSuccess(
         res,
         STATUS_CODES.OK,
@@ -60,11 +63,12 @@ export const markAsRead = asyncHandler(async (req, res) => {
 });
 
 export const markAllAsRead = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
     await Notification.update(
         { isRead: true },
         {
             where: {
-                userId: req.user.id,
+                userId,
                 isRead: false,
             },
         }
@@ -78,10 +82,12 @@ export const markAllAsRead = asyncHandler(async (req, res) => {
 });
 
 export const deleteNotification = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const notificationId = req.params.id;
     const notification = await Notification.findOne({
         where: {
-            id: req.params.id,
-            userId: req.user.id,
+            id: notificationId,
+            userId,
         },
     });
 
@@ -92,9 +98,7 @@ export const deleteNotification = asyncHandler(async (req, res) => {
             MESSAGES.NOTIFICATION_NOT_FOUND
         );
     }
-
     await notification.destroy();
-
     return sendSuccess(
         res,
         STATUS_CODES.OK,
@@ -103,8 +107,9 @@ export const deleteNotification = asyncHandler(async (req, res) => {
 });
 
 export const deleteAllNotifications = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
     await Notification.destroy({
-        where: { userId: req.user.id },
+        where: { userId},
     });
 
     return sendSuccess(

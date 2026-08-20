@@ -115,6 +115,8 @@ export const MESSAGES = {
     NOTIFICATION_MARKED_AS_READ: "Notification marked as read.",
     ALL_NOTIFICATION_MARKED_AS_READ: "All notifications marked as read.",
     NOTIFICATION_DELETED_SUCCESSFULLY: "Notification deleted successfully.",
+    NOTIFICATION_FETCHED: "Notifications fetched successfully",
+    UNREAD_NOTIFICATIONS_COUNT_FETCHED:"Unread notifications count fetched",
 
     TOO_MANY_REQUEST: "Too many requests. Please try again later.",
     TOO_MANY_LOGIN_ATTEMPT: "Too many login attempts. Please try again after 15 minute.",
@@ -141,6 +143,8 @@ export const MESSAGES = {
     SOURCES_FETCHED :"Sources fetched successfully.",
 
     INCOME_DATE_IS_REQUIRED: "Income date is required.",
-    INVALID_CATEGORY:"Category must be one of [Food, Travel, Shopping, Bills, Health, Education, Entertainment, Investment, Others"
+    INVALID_CATEGORY:"Category must be one of [Food, Travel, Shopping, Bills, Health, Education, Entertainment, Investment, Others",
+
+    REPORT_FETCHED_SUCCESSFULLY:"Report fetched successfully."
 
 };

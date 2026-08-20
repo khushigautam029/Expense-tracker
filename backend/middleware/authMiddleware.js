@@ -6,7 +6,6 @@ import { MESSAGES, STATUS_CODES } from "../utils/setConstants.js";
 
 const authMiddleware = asyncHandler(async (req, res, next) => {
     const authHeader = req.header("Authorization");
-
     if (!authHeader) {
         return sendError(
             res,
@@ -16,7 +15,6 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
     }
 
     let decoded;
-
     try {
         decoded = jwt.verify(
             authHeader.replace(/^Bearer\s+/i, ""),
@@ -47,7 +45,6 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
             MESSAGES.USER_NOT_FOUND
         );
     }
-
     req.user = user;
     next();
 });
