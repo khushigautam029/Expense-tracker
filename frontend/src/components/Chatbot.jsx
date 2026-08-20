@@ -1,0 +1,472 @@
+import axios from "axios";
+import {
+    Bot,
+    IndianRupee,
+    Loader2,
+    PieChart,
+    Send,
+    Sparkles,
+    TrendingDown,
+    Wallet,
+    X,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+const Chatbot = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [message, setMessage] = useState("");
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    // Reference to the bottom of the chat
+    const messagesEndRef = useRef(null);
+
+    // Suggested questions
+    const suggestedQuestions = [
+        {
+            label: "My balance",
+            question: "What is my current balance?",
+            icon: Wallet,
+        },
+        {
+            label: "Total spending",
+            question: "How much did I spend?",
+            icon: TrendingDown,
+        },
+        {
+            label: "Highest category",
+            question: "Which category do I spend the most on?",
+            icon: PieChart,
+        },
+        {
+            label: "Total income",
+            question: "How much did I earn?",
+            icon: IndianRupee,
+        },
+    ];
+
+    // Auto-scroll whenever messages/loading changes
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({
+            behavior: "smooth",
+        });
+    }, [messages, loading]);
+
+    const handleSend = async (question = message) => {
+        const trimmedMessage = question.trim();
+
+        if (!trimmedMessage || loading) {
+            return;
+        }
+
+        // Add user message
+        setMessages((prev) => [
+            ...prev,
+            {
+                role: "user",
+                content: trimmedMessage,
+            },
+        ]);
+
+        setMessage("");
+        setLoading(true);
+
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await axios.post(
+                "http://localhost:5000/api/chatbot/message",
+                {
+                    message: trimmedMessage,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const aiMessage = response.data?.reply;
+
+            setMessages((prev) => [
+                ...prev,
+                {
+                    role: "assistant",
+                    content:
+                        aiMessage ||
+                        "Sorry, I couldn't generate a response.",
+                },
+            ]);
+        } catch (error) {
+            console.error(
+                "Chatbot Error:",
+                error.response?.data || error
+            );
+
+            setMessages((prev) => [
+                ...prev,
+                {
+                    role: "assistant",
+                    content:
+                        error.response?.data?.message ||
+                        "Sorry, something went wrong. Please try again.",
+                },
+            ]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <>
+            {/* ================= CHAT WINDOW ================= */}
+            {isOpen && (
+                <div
+                    className="
+                        fixed bottom-24 right-6 z-50
+                        flex h-[560px] w-[380px]
+                        flex-col overflow-hidden
+                        rounded-2xl bg-white
+                        shadow-2xl
+                        ring-1 ring-gray-200
+                    "
+                >
+                    {/* ================= HEADER ================= */}
+                    <div
+                        className="
+                            flex items-center justify-between
+                            bg-indigo-600
+                            px-4 py-4
+                            text-white
+                        "
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                                <Bot size={22} />
+                            </div>
+
+                            <div>
+                                <h3 className="font-semibold">
+                                    Finance Assistant
+                                </h3>
+
+                                <div className="flex items-center gap-1 text-xs text-indigo-100">
+                                    <span className="h-2 w-2 rounded-full bg-green-400"></span>
+                                    Online
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="
+                                rounded-full p-2
+                                transition
+                                hover:bg-white/20
+                            "
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    {/* ================= MESSAGES ================= */}
+                    <div
+                        className="
+                            flex-1
+                            overflow-y-auto
+                            bg-gray-50
+                            p-4
+                        "
+                    >
+                        {/* Welcome message */}
+                        {messages.length === 0 && (
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-2">
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                                        <Sparkles size={16} />
+                                    </div>
+
+                                    <div className="max-w-[85%] rounded-2xl rounded-tl-none bg-white p-3 text-sm leading-5 text-gray-700 shadow-sm">
+                                        <p>
+                                            👋 Hi! I'm your Finance
+                                            Assistant.
+                                        </p>
+
+                                        <p className="mt-2">
+                                            I can help you understand
+                                            your income, expenses,
+                                            balance and spending
+                                            habits.
+                                        </p>
+
+                                        <p className="mt-2 font-medium text-gray-800">
+                                            Try one of these:
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Suggested Questions */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    {suggestedQuestions.map(
+                                        (item) => {
+                                            const Icon = item.icon;
+
+                                            return (
+                                                <button
+                                                    key={
+                                                        item.question
+                                                    }
+                                                    onClick={() =>
+                                                        handleSend(
+                                                            item.question
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        loading
+                                                    }
+                                                    className="
+                                                        flex
+                                                        items-center
+                                                        gap-2
+                                                        rounded-xl
+                                                        border
+                                                        border-gray-200
+                                                        bg-white
+                                                        px-3 py-2.5
+                                                        text-left
+                                                        text-xs
+                                                        font-medium
+                                                        text-gray-700
+                                                        shadow-sm
+                                                        transition
+                                                        hover:border-indigo-300
+                                                        hover:bg-indigo-50
+                                                        hover:text-indigo-600
+                                                        disabled:cursor-not-allowed
+                                                        disabled:opacity-50
+                                                    "
+                                                >
+                                                    <Icon
+                                                        size={16}
+                                                        className="shrink-0"
+                                                    />
+
+                                                    <span>
+                                                        {
+                                                            item.label
+                                                        }
+                                                    </span>
+                                                </button>
+                                            );
+                                        }
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Conversation messages */}
+                        <div className="mt-3 space-y-3">
+                            {messages.map(
+                                (item, index) => (
+                                    <div
+                                        key={index}
+                                        className={`flex ${
+                                            item.role ===
+                                            "user"
+                                                ? "justify-end"
+                                                : "justify-start"
+                                        }`}
+                                    >
+                                        {item.role ===
+                                            "assistant" && (
+                                            <div className="mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                                                <Bot
+                                                    size={
+                                                        16
+                                                    }
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div
+                                            className={`
+                                                max-w-[78%]
+                                                whitespace-pre-wrap
+                                                rounded-2xl
+                                                px-3 py-2.5
+                                                text-sm
+                                                leading-5
+                                                ${
+                                                    item.role ===
+                                                    "user"
+                                                        ? "rounded-br-none bg-indigo-600 text-white"
+                                                        : "rounded-bl-none bg-white text-gray-700 shadow-sm"
+                                                }
+                                            `}
+                                        >
+                                            {
+                                                item.content
+                                            }
+                                        </div>
+                                    </div>
+                                )
+                            )}
+
+                            {/* Thinking animation */}
+                            {loading && (
+                                <div className="flex items-center">
+                                    <div className="mr-2 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                                        <Bot
+                                            size={16}
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center gap-1 rounded-2xl rounded-bl-none bg-white px-4 py-3 shadow-sm">
+                                        <span className="text-xs text-gray-500">
+                                            Thinking
+                                        </span>
+
+                                        <span className="flex gap-1">
+                                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400"></span>
+
+                                            <span
+                                                className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400"
+                                                style={{
+                                                    animationDelay:
+                                                        "150ms",
+                                                }}
+                                            ></span>
+
+                                            <span
+                                                className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400"
+                                                style={{
+                                                    animationDelay:
+                                                        "300ms",
+                                                }}
+                                            ></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Auto-scroll target */}
+                            <div ref={messagesEndRef} />
+                        </div>
+                    </div>
+
+                    {/* ================= INPUT ================= */}
+                    <div className="border-t bg-white p-3">
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                value={message}
+                                onChange={(e) =>
+                                    setMessage(
+                                        e.target.value
+                                    )
+                                }
+                                onKeyDown={(e) => {
+                                    if (
+                                        e.key ===
+                                            "Enter" &&
+                                        !e.shiftKey
+                                    ) {
+                                        e.preventDefault();
+                                        handleSend();
+                                    }
+                                }}
+                                placeholder="Ask about your finances..."
+                                disabled={loading}
+                                className="
+                                    min-w-0
+                                    flex-1
+                                    rounded-xl
+                                    border border-gray-300
+                                    px-3 py-2.5
+                                    text-sm
+                                    outline-none
+                                    transition
+                                    placeholder:text-gray-400
+                                    focus:border-indigo-500
+                                    focus:ring-2
+                                    focus:ring-indigo-100
+                                    disabled:bg-gray-100
+                                "
+                            />
+
+                            <button
+                                onClick={() =>
+                                    handleSend()
+                                }
+                                disabled={
+                                    loading ||
+                                    !message.trim()
+                                }
+                                className="
+                                    flex h-10 w-10
+                                    shrink-0
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-indigo-600
+                                    text-white
+                                    transition
+                                    hover:bg-indigo-700
+                                    disabled:cursor-not-allowed
+                                    disabled:opacity-50
+                                "
+                            >
+                                {loading ? (
+                                    <Loader2
+                                        size={18}
+                                        className="animate-spin"
+                                    />
+                                ) : (
+                                    <Send size={18} />
+                                )}
+                            </button>
+                        </div>
+
+                        <p className="mt-2 text-center text-[10px] text-gray-400">
+                            AI responses are based on your
+                            financial data.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* ================= FLOATING BUTTON ================= */}
+            <button
+                onClick={() =>
+                    setIsOpen(!isOpen)
+                }
+                className="
+                    fixed bottom-6 right-6 z-50
+                    flex h-14 w-14
+                    items-center justify-center
+                    rounded-full
+                    bg-indigo-600
+                    text-white
+                    shadow-lg
+                    transition-all duration-200
+                    hover:scale-105
+                    hover:bg-indigo-700
+                    hover:shadow-xl
+                "
+                aria-label={
+                    isOpen
+                        ? "Close chatbot"
+                        : "Open chatbot"
+                }
+            >
+                {isOpen ? (
+                    <X size={26} />
+                ) : (
+                    <Bot size={26} />
+                )}
+            </button>
+        </>
+    );
+};
+
+export default Chatbot;

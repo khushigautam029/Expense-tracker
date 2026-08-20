@@ -7,17 +7,6 @@ import {
     Wallet,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { errorToast } from "../utils/swal";
-const COLORS = [
-    "#6366F1",
-    "#22C55E",
-    "#F59E0B",
-    "#EF4444",
-    "#8B5CF6",
-    "#06B6D4",
-    "#EC4899",
-];
-
 import {
     Bar,
     BarChart,
@@ -28,6 +17,17 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
+import Chatbot from "../components/Chatbot";
+import { errorToast } from "../utils/swal";
+const COLORS = [
+    "#6366F1",
+    "#22C55E",
+    "#F59E0B",
+    "#EF4444",
+    "#8B5CF6",
+    "#06B6D4",
+    "#EC4899",
+];
 
 import { useEffect, useRef, useState } from "react";
 import { getDashboard } from "../services/dashboardService";
@@ -421,7 +421,7 @@ const Dashboard = () => {
                 </div>
 
             </div>
-
+            <Chatbot />
         </div>
     );
 };
