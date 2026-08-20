@@ -80,18 +80,15 @@ export const chatWithBot = asyncHandler(async (req, res) => {
                     financialData.biggestExpense,
             };
             break;
-
         default:
             relevantData = financialData;
     }
 
     const prompt = `
 You are a helpful AI financial assistant inside an expense tracker application.
-
 You are answering questions using the logged-in user's actual financial data.
 
 IMPORTANT RULES:
-
 1. Only use the financial data provided below.
 2. Never invent transactions or amounts.
 3. Never guess financial information.
@@ -102,38 +99,71 @@ IMPORTANT RULES:
 8. Give practical advice when appropriate.
 
 USER QUESTION:
-
 ${message}
-
 QUERY TYPE:
-
 ${queryType}
-
 RELEVANT FINANCIAL DATA:
-
 ${JSON.stringify(
-    relevantData,
-    null,
-    2
-)}
+        relevantData,
+        null,
+        2
+    )}
 `;
-
     console.log("🤖 Sending relevant data to Gemini...");
+    try {
+        const response =
+            await gemini.models.generateContent({
+                model: "gemini-3.6-flash",
+                contents: prompt,
+            });
+        console.log(
+            "✅ Gemini response received"
+        );
+        return sendSuccess(
+            res,
+            STATUS_CODES.OK,
+            "AI response generated successfully.",
+            {
+                reply: response.text,
+            }
+        );
+    } catch (error) {
+        console.error(
+            "❌ Gemini API Error:",
+            error
+        );
+        const status =
+            error?.status ||
+            error?.response?.status;
 
-    const response =
-        await gemini.models.generateContent({
-            model: "gemini-3.6-flash",
-            contents: prompt,
-        });
-
-    console.log("✅ Gemini response received");
-
-    return sendSuccess(
-        res,
-        STATUS_CODES.OK,
-        "AI response generated successfully.",
-        {
-            reply: response.text,
+        if (status === 429) {
+            return sendError(
+                res,
+                STATUS_CODES.TOO_MANY_REQUESTS,
+                "The AI service is temporarily busy. Please try again in a few seconds."
+            );
         }
-    );
+
+        if (status === 503) {
+            return sendError(
+                res,
+                STATUS_CODES.SERVICE_UNAVAILABLE,
+                "The AI service is temporarily unavailable. Please try again shortly."
+            );
+        }
+
+        if (status === 401 || status === 403) {
+            return sendError(
+                res,
+                STATUS_CODES.UNAUTHORIZED,
+                "The AI service authentication failed. Please contact the administrator."
+            );
+        }
+
+        return sendError(
+            res,
+            STATUS_CODES.INTERNAL_SERVER_ERROR,
+            "Unable to generate an AI response. Please try again."
+        );
+    }
 });
