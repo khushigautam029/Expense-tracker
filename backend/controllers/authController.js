@@ -19,7 +19,7 @@ export const register = asyncHandler(async (req, res) => {
         return sendError(
             res,
             STATUS_CODES.BAD_REQUEST,
-            error.details[0].message
+            error.message
         );
     }
     const { name, email, password } = value;
@@ -70,7 +70,7 @@ export const login = asyncHandler(async (req, res) => {
         return sendError(
             res,
             STATUS_CODES.BAD_REQUEST,
-            error.details[0].message
+            error.message
         );
     }
     const { email, password } = value;
@@ -179,7 +179,7 @@ export const verifyOTP = asyncHandler(async (req, res) => {
         return sendError(
             res,
             STATUS_CODES.BAD_REQUEST,
-            error.details[0].message
+            error.message
         );
     }
 
@@ -254,7 +254,7 @@ export const resendOTP = asyncHandler(async (req, res) => {
         return sendError(
             res,
             STATUS_CODES.BAD_REQUEST,
-            error.details[0].message
+            error.message
         );
     }
 
@@ -341,7 +341,7 @@ export const changePassword = asyncHandler(async (req, res) => {
         return sendError(
             res,
             STATUS_CODES.BAD_REQUEST,
-            error.details[0].message
+            error.message
         );
     }
 

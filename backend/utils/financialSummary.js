@@ -5,21 +5,22 @@ const getDateFilter = (month) => {
     if (!month) {
         return {};
     }
-
     const [year, monthNumber] = month.split("-");
-
-    const lastDay = new Date(
+    const startDate = `${year}-${monthNumber}-01`;
+    const nextMonth = new Date(
         Number(year),
         Number(monthNumber),
-        0
-    ).getDate();
+        1
+    );
+
+    const nextMonthDate = `${nextMonth.getFullYear()}-${String(
+        nextMonth.getMonth() + 1
+    ).padStart(2, "0")}-01`;
 
     return {
         date: {
-            [Op.between]: [
-                `${year}-${monthNumber}-01`,
-                `${year}-${monthNumber}-${String(lastDay).padStart(2, "0")}`,
-            ],
+            [Op.gte]: startDate,
+            [Op.lt]: nextMonthDate,
         },
     };
 };

@@ -28,7 +28,7 @@ export const addExpense = asyncHandler(async (req, res) => {
         return sendError(
             res,
             STATUS_CODES.BAD_REQUEST,
-            error.details[0].message
+            error.message
         );
     }
 

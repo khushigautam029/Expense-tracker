@@ -1,6 +1,6 @@
 import { ChatMessage } from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import { detectQueryType } from "../utils/chatbotQuery.js";
+import { detectMonth, detectQueryType } from "../utils/chatbotQuery.js";
 import { getFinancialSummary } from "../utils/financialSummary.js";
 import gemini from "../utils/gemini.js";
 import { sendError, sendSuccess } from "../utils/responseHandler.js";
@@ -18,6 +18,7 @@ export const chatWithBot = asyncHandler(async (req, res) => {
 
     const userId = req.user.id;
     const userMessage = message.trim();
+    console.log("----------------------------------");
     console.log("👤 Chatbot user:", userId);
     console.log("💬 User message:", userMessage);
 
@@ -30,10 +31,13 @@ export const chatWithBot = asyncHandler(async (req, res) => {
 
     // 2. DETECT QUERY TYPE
     const queryType = detectQueryType(userMessage);
+    const month = detectMonth(userMessage);
+    console.log("----------------------------------");
     console.log("🔍 Query type:", queryType);
+    console.log("📅 Detected month:", month);
 
     // 3. GET FINANCIAL DATA
-    const financialData = await getFinancialSummary(userId);
+    const financialData = await getFinancialSummary(userId , month);
     let relevantData = financialData;
     
     // 4. PROVIDE ONLY RELEVANT DATA TO GEMINI
@@ -101,6 +105,8 @@ ${queryType}
 RELEVANT FINANCIAL DATA:
 ${JSON.stringify(relevantData, null, 2)}
 `;
+
+    console.log("----------------------------------");
 
     console.log("🤖 Sending relevant data to Gemini...");
 
