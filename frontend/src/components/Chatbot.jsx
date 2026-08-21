@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
     Bot,
     IndianRupee,
@@ -12,6 +11,10 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import {
+    getChatHistory,
+    sendChatMessage,
+} from "../services/chatbotService";
 
 const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +23,6 @@ const Chatbot = () => {
     const [loading, setLoading] = useState(false);
 
     const messagesEndRef = useRef(null);
-
     const suggestedQuestions = [
         {
             label: "My balance",
@@ -44,6 +46,10 @@ const Chatbot = () => {
         },
     ];
 
+    useEffect(() => {
+        fetchChatHistory();
+    }, []);
+
     // Auto-scroll whenever messages/loading changes
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({
@@ -51,12 +57,29 @@ const Chatbot = () => {
         });
     }, [messages, loading]);
 
+    const fetchChatHistory = async () => {
+        try {
+            const response = await getChatHistory();
+
+            const history = response?.messages || [];
+
+            setMessages(history);
+        } catch (error) {
+            console.error(
+                "Failed to fetch chat history:",
+                error.response?.data || error
+            );
+        }
+    };
+
     const handleSend = async (question = message) => {
         const trimmedMessage = question.trim();
+
         if (!trimmedMessage || loading) {
             return;
         }
-        // Add user message
+
+        // Add user message immediately
         setMessages((prev) => [
             ...prev,
             {
@@ -64,23 +87,19 @@ const Chatbot = () => {
                 content: trimmedMessage,
             },
         ]);
-        setMessage("");
-        setLoading(true);
-        try {
-            const token = localStorage.getItem("token");
-            const response = await axios.post(
-                "http://localhost:5000/api/chatbot/message",
-                {
-                    message: trimmedMessage,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
 
-            const aiMessage = response.data?.reply;
+        // Clear input
+        setMessage("");
+
+        // Start loading
+        setLoading(true);
+
+        try {
+            const response = await sendChatMessage(trimmedMessage);
+
+            const aiMessage = response?.reply;
+
+            // Add AI response
             setMessages((prev) => [
                 ...prev,
                 {
@@ -97,6 +116,7 @@ const Chatbot = () => {
             );
 
             const status = error.response?.status;
+
             let errorMessage =
                 "Sorry, something went wrong. Please try again.";
 
@@ -117,6 +137,8 @@ const Chatbot = () => {
                     error.response?.data?.message ||
                     "Please check your question and try again.";
             }
+
+            // Show error as assistant message
             setMessages((prev) => [
                 ...prev,
                 {
@@ -125,6 +147,7 @@ const Chatbot = () => {
                 },
             ]);
         } finally {
+            // Always stop loading
             setLoading(false);
         }
     };
@@ -249,11 +272,10 @@ const Chatbot = () => {
                             {messages.map((item, index) => (
                                 <div
                                     key={index}
-                                    className={`flex ${
-                                        item.role === "user"
-                                            ? "justify-end"
-                                            : "justify-start"
-                                    }`}
+                                    className={`flex ${item.role === "user"
+                                        ? "justify-end"
+                                        : "justify-start"
+                                        }`}
                                 >
                                     {/* Assistant icon */}
                                     {item.role === "assistant" && (
@@ -273,14 +295,13 @@ const Chatbot = () => {
                                             text-sm
                                             leading-5
 
-                                            ${
-                                                item.role === "user"
-                                                    ? `
+                                            ${item.role === "user"
+                                                ? `
                                                         rounded-br-none
                                                         bg-indigo-600
                                                         text-white
                                                     `
-                                                    : `
+                                                : `
                                                         rounded-bl-none
                                                         bg-white
                                                         dark:bg-gray-900

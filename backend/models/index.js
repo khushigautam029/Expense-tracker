@@ -1,3 +1,4 @@
+import ChatMessage from "./ChatMessage.js";
 import Expense from "./Expense.js";
 import Income from "./Income.js";
 import Notification from "./Notification.js";
@@ -24,14 +25,6 @@ Expense.belongsTo(User, {
     foreignKey: "userId",
 });
 
-// User.hasMany(Source, {
-//     foreignKey: "userId",
-// });
-
-// Source.belongsTo(User, {
-//     foreignKey: "userId",
-// });
-
 Income.belongsTo(Source, {
     foreignKey: "sourceId",
     as: "source",
@@ -53,5 +46,14 @@ Notification.belongsTo(User, {
     foreignKey: "userId",
 });
 
-export { Expense, Income, Notification, Source, User };
+User.hasMany(ChatMessage,{
+    foreignKey:"userId",
+    onDelete:"CASCADE",
+});
+
+ChatMessage.belongsTo(User,{
+    foreignKey:"userId",
+});
+
+export { ChatMessage, Expense, Income, Notification, Source, User };
 
