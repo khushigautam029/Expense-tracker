@@ -197,11 +197,18 @@ const Navbar = ({ collapsed = false }) => {
         navigate("/login");
     };
 
+    const handleDeleteAccount = () => {
+        const confirmed = window.confirm(
+            "Are you sure you want to delete your account? This action cannot be undone."
+        );
+        if (!confirmed) return;
+        console.log("Delete account confirmed");
+    };
+
     return (
         <header
-            className={`fixed top-0 right-0 z-30 h-[72px] border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-all duration-300 ${
-                collapsed ? "left-[76px]" : "left-[240px]"
-            }`}
+            className={`fixed top-0 right-0 z-30 h-[72px] border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-all duration-300 ${collapsed ? "left-[76px]" : "left-[240px]"
+                }`}
         >
             <div className="flex h-full items-center justify-between px-6">
                 {/* Search */}
@@ -271,9 +278,8 @@ const Navbar = ({ collapsed = false }) => {
                                         notifications.map((notification) => (
                                             <div
                                                 key={notification.id}
-                                                className={`group flex gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 transition hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
-                                                    !notification.isRead ? "bg-blue-50/50 dark:bg-blue-900/10" : ""
-                                                }`}
+                                                className={`group flex gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 transition hover:bg-slate-50 dark:hover:bg-slate-800/50 ${!notification.isRead ? "bg-blue-50/50 dark:bg-blue-900/10" : ""
+                                                    }`}
                                             >
                                                 <div
                                                     className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${getNotificationColor(
@@ -293,11 +299,10 @@ const Navbar = ({ collapsed = false }) => {
                                                 >
                                                     <div className="flex items-start justify-between gap-2">
                                                         <p
-                                                            className={`text-sm ${
-                                                                !notification.isRead
-                                                                    ? "font-semibold text-slate-800 dark:text-white"
-                                                                    : "font-medium text-slate-600 dark:text-slate-300"
-                                                            }`}
+                                                            className={`text-sm ${!notification.isRead
+                                                                ? "font-semibold text-slate-800 dark:text-white"
+                                                                : "font-medium text-slate-600 dark:text-slate-300"
+                                                                }`}
                                                         >
                                                             {notification.title}
                                                         </p>
@@ -359,9 +364,8 @@ const Navbar = ({ collapsed = false }) => {
                             </div>
                             <ChevronDown
                                 size={16}
-                                className={`text-slate-400 dark:text-slate-500 transition-transform duration-200 ${
-                                    dropdownOpen ? "rotate-180" : ""
-                                }`}
+                                className={`text-slate-400 dark:text-slate-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""
+                                    }`}
                             />
                         </button>
 
@@ -393,18 +397,26 @@ const Navbar = ({ collapsed = false }) => {
                                         <button
                                             type="button"
                                             onClick={toggleTheme}
-                                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                                                theme === "dark" ? "bg-blue-600" : "bg-slate-200"
-                                            }`}
+                                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${theme === "dark" ? "bg-blue-600" : "bg-slate-200"
+                                                }`}
                                         >
                                             <span
-                                                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                                                    theme === "dark" ? "translate-x-4" : "translate-x-1"
-                                                }`}
+                                                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${theme === "dark" ? "translate-x-4" : "translate-x-1"
+                                                    }`}
                                             />
                                         </button>
                                     </div>
                                 </div>
+
+                                <div className="border-t border-slate-100 dark:border-slate-700 my-1"></div>
+
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950/30"
+                                >
+                                    <Trash2 size={17} />
+                                    <span>Delete Account</span>
+                                </button>
 
                                 <div className="border-t border-slate-100 dark:border-slate-700 my-1"></div>
 

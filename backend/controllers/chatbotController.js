@@ -105,11 +105,8 @@ ${queryType}
 RELEVANT FINANCIAL DATA:
 ${JSON.stringify(relevantData, null, 2)}
 `;
-
     console.log("----------------------------------");
-
     console.log("🤖 Sending relevant data to Gemini...");
-
     // 6. CALL GEMINI
     try {
         const response =
@@ -142,11 +139,9 @@ ${JSON.stringify(relevantData, null, 2)}
             "❌ Gemini API Error:",
             error
         );
-
         const status =
             error?.status ||
             error?.response?.status;
-
         if (status === 429) {
             return sendError(
                 res,
@@ -154,7 +149,6 @@ ${JSON.stringify(relevantData, null, 2)}
                 "The AI service is temporarily busy. Please try again in a few seconds."
             );
         }
-
         if (status === 503) {
             return sendError(
                 res,
