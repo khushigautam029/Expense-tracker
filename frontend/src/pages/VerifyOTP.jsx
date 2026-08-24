@@ -1,8 +1,9 @@
 import { ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { resendOTP } from "../services/authService";
 import API from "../utils/api";
-import { errorToast } from "../utils/swal";
+import { errorToast, successAlert } from "../utils/swal";
 
 const VerifyOTP = () => {
     const navigate = useNavigate();
@@ -16,12 +17,10 @@ const VerifyOTP = () => {
     const handleResendOTP = async () => {
         try {
             await resendOTP(email);
-
             successAlert(
                 "OTP Sent",
                 "A new OTP has been sent to your email."
             );
-
         } catch (error) {
             errorToast(
                 "Failed",
@@ -49,19 +48,24 @@ const VerifyOTP = () => {
         e.preventDefault();
 
         if (!email) {
-            alert("Please register again so we know where to verify the OTP.");
+            errorToast(
+                "Verification Error",
+                "Please register again so we know where to verify the OTP."
+            );
             navigate("/register", { replace: true });
             return;
         }
 
         if (!/^\d{6}$/.test(otp)) {
-            alert("Please enter the 6-digit OTP from your email.");
+            errorToast(
+                "Invalid OTP",
+                "Please enter the 6-digit OTP from your email."
+            );
             return;
         }
 
         try {
             setLoading(true);
-
             const response = await API.post("/auth/verify-otp", {
                 email,
                 otp,
@@ -78,14 +82,23 @@ const VerifyOTP = () => {
             );
             sessionStorage.removeItem("verificationEmail");
 
-            alert(response.data.message);
+            await successAlert(
+                "Verification Successful",
+                response.data.message
+            );
 
             navigate("/dashboard");
         } catch (error) {
             if (error.response) {
-                alert(error.response.data.message);
+                errorToast(
+                    "Verification Failed",
+                    error.response.data.message
+                );
             } else {
-                alert("Server Error");
+                errorToast(
+                    "Server Error",
+                    "Unable to verify OTP. Please try again."
+                );
             }
         }
 

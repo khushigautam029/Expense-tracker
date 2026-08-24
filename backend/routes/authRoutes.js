@@ -1,7 +1,7 @@
 import express from "express";
 import {
     changePassword,
-    deleteUserById,
+    deleteAccount,
     // getAllUsers,
     getProfile,
     login,
@@ -18,7 +18,7 @@ router.post("/register", register);
 router.post("/login",loginLimiter, login);
 router.get("/profile",authMiddleware, getProfile);
 // router.get("/users", authMiddleware, getAllUsers);
-router.delete("/:id", authMiddleware, deleteUserById);
+router.delete("/account",authMiddleware,deleteAccount);
 router.post("/verify-otp", otpLimiter, verifyOTP);
 router.post("/resend-otp", otpLimiter, resendOTP);
 router.put("/update-profile", authMiddleware, updateProfile);

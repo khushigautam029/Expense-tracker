@@ -13,3 +13,17 @@ export const verifyOTP = async (data) => {
 
     return response.data;
 };
+
+export const deleteAccount = async () => {
+    const response = await API.delete("/auth/account");
+    return response.data;
+};
+
+
+export const resendOTP = async (email) => {
+    const response = await API.post("/auth/resend-otp", {
+        email,
+    });
+
+    return response.data;
+};

@@ -12,7 +12,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
-import { getProfile } from "../services/authService";
+import { deleteAccount, getProfile } from "../services/authService";
 import {
     deleteAllNotifications,
     deleteNotification,
@@ -20,6 +20,12 @@ import {
     markAllNotificationsAsRead,
     markNotificationAsRead
 } from "../services/notificationService";
+import {
+    confirmDelete,
+    errorAlert,
+    successAlert
+} from "../utils/swal.js";
+
 
 const Navbar = ({ collapsed = false }) => {
     const navigate = useNavigate();
@@ -197,12 +203,37 @@ const Navbar = ({ collapsed = false }) => {
         navigate("/login");
     };
 
-    const handleDeleteAccount = () => {
-        const confirmed = window.confirm(
-            "Are you sure you want to delete your account? This action cannot be undone."
-        );
-        if (!confirmed) return;
-        console.log("Delete account confirmed");
+    const handleDeleteAccount = async () => {
+        const result = await confirmDelete();
+        if (!result.isConfirmed) return;
+
+        try {
+            const response = await deleteAccount();
+
+            if (response.success) {
+                // Clear authentication data
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+
+                // Close dropdown
+                setDropdownOpen(false);
+                await successAlert(
+                    "Account Deleted",
+                    "Your account and all associated data have been permanently deleted."
+                );
+
+                // Redirect to login
+                navigate("/login");
+            }
+        } catch (error) {
+            console.error("Delete Account Error:", error);
+
+            const message =
+                error.response?.data?.message ||
+                "Unable to delete your account. Please try again.";
+
+            errorAlert("Delete Failed", message);
+        }
     };
 
     return (

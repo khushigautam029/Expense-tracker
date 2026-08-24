@@ -36,6 +36,7 @@ export const MESSAGES = {
     INVALID_TOKEN: "Invalid or expired token.",
     TOKEN_REQUIRED: "Authorization token is required.",
     USER_DELETED: "User deleted",
+    ACCOUNT_NO_LONGER_EXISTS:"Account not found. Please create a new account.",
 
     // Income
     INCOME_ADDED: "Income added successfully.",

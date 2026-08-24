@@ -1,4 +1,10 @@
-import { User } from "../models/index.js";
+import {
+    ChatMessage,
+    Expense,
+    Income,
+    Notification,
+    User
+} from "../models/index.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import {
     generateOTP,
@@ -81,7 +87,7 @@ export const login = asyncHandler(async (req, res) => {
         return sendError(
             res,
             STATUS_CODES.BAD_REQUEST,
-            MESSAGES.INVALID_CREDENTIALS
+            MESSAGES.ACCOUNT_NO_LONGER_EXISTS
         );
     }
     if (!user.isVerified) {
@@ -116,7 +122,6 @@ export const login = asyncHandler(async (req, res) => {
     );
 });
 
-
 export const getProfile = asyncHandler(async (req, res) => {
     const { id, name, email } = req.user;
     return sendSuccess(
@@ -127,19 +132,9 @@ export const getProfile = asyncHandler(async (req, res) => {
     );
 });
 
-export const deleteUserById = asyncHandler(async (req, res) => {
-    const userId = Number(req.params.id);
-
-    if (userId !== req.user.id) {
-        return sendError(
-            res,
-            STATUS_CODES.FORBIDDEN,
-            MESSAGES.ACCESS_DENIED
-        );
-    }
-
+export const deleteAccount = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
     const user = await User.findByPk(userId);
-
     if (!user) {
         return sendError(
             res,
@@ -149,7 +144,29 @@ export const deleteUserById = asyncHandler(async (req, res) => {
     }
 
     await transactionHandler(async (transaction) => {
-        await user.destroy({ transaction });
+        await Expense.destroy({
+            where: { userId },
+            transaction,
+        });
+
+        await Income.destroy({
+            where: { userId },
+            transaction,
+        });
+
+        await Notification.destroy({
+            where: { userId },
+            transaction,
+        });
+
+        await ChatMessage.destroy({
+            where: { userId },
+            transaction,
+        });
+
+        await user.destroy({
+            transaction,
+        });
     });
 
     return sendSuccess(
