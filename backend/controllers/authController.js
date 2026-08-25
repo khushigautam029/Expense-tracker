@@ -20,7 +20,6 @@ import { changePasswordSchema, loginSchema, registerSchema, resendOTPSchema, ver
 
 export const register = asyncHandler(async (req, res) => {
     const { error, value } = registerSchema.validate(req.body);
-
     if (error) {
         return sendError(
             res,
