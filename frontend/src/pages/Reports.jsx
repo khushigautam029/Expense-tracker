@@ -57,10 +57,13 @@ const Reports = () => {
                 }
             }
 
+            const income = Number(data?.income ?? data?.totalIncome ?? 0);
+            const expense = Number(data?.expense ?? data?.totalExpense ?? 0);
+
             setReportData({
-                income: Number(data?.income ?? data?.totalIncome ?? 0),
-                expense: Number(data?.expense ?? data?.totalExpense ?? 0),
-                savings: Number(data?.savings ?? data?.netSavings ?? (data?.income - data?.expense) ?? 0),
+                income,
+                expense,
+                savings: Number(data?.savings ?? data?.netSavings ?? income - expense),
                 transactions: transactionsList,
             });
         } catch (error) {

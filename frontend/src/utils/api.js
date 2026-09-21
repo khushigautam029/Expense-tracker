@@ -14,7 +14,22 @@ API.interceptors.request.use((config) => {
 });
 
 API.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        const url = response.config.url || "";
+        const method = response.config.method?.toLowerCase();
+
+        // Income and expense changes create a notification on the server.
+        // Let the shared header refresh its badge immediately, rather than
+        // waiting for the notification menu to be opened.
+        if (
+            method !== "get" &&
+            (url.startsWith("/income") || url.startsWith("/expenses"))
+        ) {
+            window.dispatchEvent(new Event("notifications:changed"));
+        }
+
+        return response;
+    },
     (error) => {
         if (error.response?.status === 401) {
             localStorage.removeItem("token");

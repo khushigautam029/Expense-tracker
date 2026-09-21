@@ -17,6 +17,7 @@ import {
     deleteAllNotifications,
     deleteNotification,
     getNotifications,
+    getUnreadCount,
     markAllNotificationsAsRead,
     markNotificationAsRead
 } from "../services/notificationService";
@@ -97,6 +98,29 @@ const Navbar = ({ collapsed = false }) => {
             setNotificationLoading(false);
         }
     };
+
+    const fetchUnreadCount = async () => {
+        try {
+            const response = await getUnreadCount();
+            if (response.success) {
+                setUnreadCount(Number(response.unreadCount) || 0);
+            }
+        } catch (error) {
+            if (error.response?.status !== 401) {
+                console.error("Unread notification count error:", error);
+            }
+        }
+    };
+
+    // Load the badge on every page refresh and refresh it right after a
+    // transaction creates a notification.
+    useEffect(() => {
+        fetchUnreadCount();
+        window.addEventListener("notifications:changed", fetchUnreadCount);
+        return () => {
+            window.removeEventListener("notifications:changed", fetchUnreadCount);
+        };
+    }, []);
 
     const handleNotificationClick = () => {
         setNotificationOpen(!notificationOpen);
