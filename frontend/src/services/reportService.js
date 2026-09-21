@@ -1,7 +1,9 @@
 import API from "../utils/api";
 
 export const getReport = async (month) => {
-    const response = await API.get(`/reports?month=${month}`);
+    const response = await API.get("/reports", {
+        params: month ? { month } : {},
+    });
     return response.data;
 };
 

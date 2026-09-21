@@ -16,9 +16,8 @@ import { getReport } from "../services/reportService";
 
 const Reports = () => {
     const monthInputRef = useRef(null);
-    const [reportMonth, setReportMonth] = useState(
-        new Date().toISOString().slice(0, 7)
-    );
+    // Start with all records, consistent with the Income and Expenses pages.
+    const [reportMonth, setReportMonth] = useState("");
 
     const [reportData, setReportData] = useState({
         income: 0,
@@ -53,7 +52,7 @@ const Reports = () => {
                 if (localData.length > 0) {
                     transactionsList = localData.filter(tx => {
                         const txMonth = (tx.date || tx.createdAt || "").slice(0, 7);
-                        return txMonth === reportMonth || !txMonth;
+                        return !reportMonth || txMonth === reportMonth || !txMonth;
                     });
                 }
             }
@@ -185,7 +184,7 @@ const Reports = () => {
             day: "numeric",
         });
         doc.setFontSize(9);
-        doc.text(`Period: ${reportMonth}`, 196, 18, { align: "right" });
+        doc.text(`Period: ${reportMonth || "All time"}`, 196, 18, { align: "right" });
         doc.text(`Generated: ${generatedDate}`, 196, 25, { align: "right" });
 
         // Summary Cards
@@ -324,7 +323,7 @@ const Reports = () => {
             doc.text(`Page ${i} of ${pageCount}`, 196, 287, { align: "right" });
         }
 
-        doc.save(`Expense_Report_${reportMonth}.pdf`);
+        doc.save(`Expense_Report_${reportMonth || "all-time"}.pdf`);
     };
 
     const downloadExcel = () => {
@@ -353,7 +352,7 @@ const Reports = () => {
         XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
 
         const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-        saveAs(new Blob([excelBuffer]), `Expense_Report_${reportMonth}.xlsx`);
+        saveAs(new Blob([excelBuffer]), `Expense_Report_${reportMonth || "all-time"}.xlsx`);
     };
 
     return (
@@ -443,6 +442,15 @@ const Reports = () => {
                 [&::-webkit-calendar-picker-indicator]:pointer-events-none
             "
                         />
+                        {reportMonth && (
+                            <button
+                                type="button"
+                                onClick={() => setReportMonth("")}
+                                className="mr-3 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                            >
+                                All time
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

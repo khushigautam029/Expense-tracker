@@ -73,9 +73,9 @@ const Dashboard = () => {
 
     const monthInputRef = useRef(null);
     const navigate = useNavigate();
-    const [selectedMonth, setSelectedMonth] = useState(
-        new Date().toISOString().slice(0, 7)
-    );
+    // Match the Income and Expenses pages: show all saved records until a
+    // month is explicitly selected.
+    const [selectedMonth, setSelectedMonth] = useState("");
 
     const [dashboard, setDashboard] = useState({
         summary: {
@@ -141,20 +141,23 @@ const Dashboard = () => {
         );
     }
 
-    const monthlyChartData =
-        dashboard.monthlyIncome?.map((income) => {
-
-            const expense = dashboard.monthlyExpense.find(
-                (item) => item.month === income.month
-            );
-
-            return {
-                month: income.month,
-                income: Number(income.total),
-                expense: expense ? Number(expense.total) : 0,
+    const monthlyChartData = Object.values(
+        (dashboard.monthlyIncome || []).reduce((months, item) => {
+            months[item.month] = {
+                month: item.month,
+                income: Number(item.total),
+                expense: months[item.month]?.expense || 0,
             };
-
-        }) || [];
+            return months;
+        }, (dashboard.monthlyExpense || []).reduce((months, item) => {
+            months[item.month] = {
+                month: item.month,
+                income: months[item.month]?.income || 0,
+                expense: Number(item.total),
+            };
+            return months;
+        }, {}))
+    );
 
     const categoryData = dashboard.expenseByCategory || [];
 
@@ -221,6 +224,15 @@ const Dashboard = () => {
                         [&::-webkit-calendar-picker-indicator]:absolute
                         [&::-webkit-calendar-picker-indicator]:pointer-events-none"
                     />
+                    {selectedMonth && (
+                        <button
+                            type="button"
+                            onClick={() => setSelectedMonth("")}
+                            className="ml-2 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                        >
+                            All time
+                        </button>
+                    )}
                 </div>
 
             </div>
