@@ -141,13 +141,11 @@ export const deleteAccount = asyncHandler(async (req, res) => {
             MESSAGES.USER_NOT_FOUND
         );
     }
-
     await transactionHandler(async (transaction) => {
         await Expense.destroy({
             where: { userId },
             transaction,
         });
-
         await Income.destroy({
             where: { userId },
             transaction,
@@ -304,10 +302,19 @@ export const resendOTP = asyncHandler(async (req, res) => {
         otpExpiry
     });
 
-    sendOTPEmail(email, otp).catch((error) => {
-        console.error("OTP Email Error:", error);
-    });
+    // For Brevo SMTP
+    // sendOTPEmail(email, otp).catch((error) => {
+    //     console.error("OTP Email Error:", error);
+    // });
+    // return sendSuccess(
+    //     res,
+    //     STATUS_CODES.OK,
+    //     MESSAGES.NEW_OTP_SENT,
+    //     { email }
+    // );
 
+    // For Brevo HTTP api
+    await sendOTPEmail(email, otp);
     return sendSuccess(
         res,
         STATUS_CODES.OK,
