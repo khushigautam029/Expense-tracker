@@ -8,10 +8,8 @@ const initializeDatabase = async () => {
     if (initialized) {
         return;
     }
-
     await sequelize.authenticate();
     await sequelize.sync();
-
     initialized = true;
 };
 
