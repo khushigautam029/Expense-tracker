@@ -146,6 +146,7 @@ export const MESSAGES = {
     INCOME_DATE_IS_REQUIRED: "Income date is required.",
     INVALID_CATEGORY:"Category must be one of [Food, Travel, Shopping, Bills, Health, Education, Entertainment, Investment, Others",
 
-    REPORT_FETCHED_SUCCESSFULLY:"Report fetched successfully."
+    REPORT_FETCHED_SUCCESSFULLY:"Report fetched successfully.",
+    DATABASE_CONNECTION_FAILED:"Database connection failed"
 
 };
