@@ -20,6 +20,7 @@ import { changePasswordSchema, loginSchema, registerSchema, resendOTPSchema, ver
 
 export const register = asyncHandler(async (req, res) => {
     const { error, value } = registerSchema.validate(req.body);
+
     if (error) {
         return sendError(
             res,
@@ -27,8 +28,10 @@ export const register = asyncHandler(async (req, res) => {
             error.message
         );
     }
+
     const { name, email, password } = value;
-    let existingUser = await User.findOne({
+
+    const existingUser = await User.findOne({
         where: { email },
     });
 
@@ -39,14 +42,26 @@ export const register = asyncHandler(async (req, res) => {
             MESSAGES.USER_ALREADY_EXISTS
         );
     }
+
     const otp = generateOTP();
     const otpExpiry = generateOTPExpiry();
 
     let registeredUser;
+
     if (existingUser) {
-        registeredUser = await User.update({ otp, otpExpiry, });
+        // Update the existing, unverified user's OTP
+        await existingUser.update({
+            otp,
+            otpExpiry,
+            name,
+            password: await hashPassword(password),
+        });
+
+        registeredUser = existingUser;
     } else {
+        // Create a new user
         const hashedPassword = await hashPassword(password);
+
         registeredUser = await User.create({
             name,
             email,
@@ -68,6 +83,7 @@ export const register = asyncHandler(async (req, res) => {
         { email: registeredUser.email }
     );
 });
+
 
 export const login = asyncHandler(async (req, res) => {
     const { error, value } = loginSchema.validate(req.body);
